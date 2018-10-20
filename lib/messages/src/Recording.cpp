@@ -1,6 +1,7 @@
 #include "messages/Recording.h"
 #include "messages/MessageSequence.h"
 
+#include <core/FileUtils.h>
 #include <core/Log.h>
 #include <recording/TopicDatabase_generated.h>
 #include <recording/TypeDatabase_generated.h>
@@ -16,12 +17,10 @@ Recording::Recording(const std::string& filename)
     }
 
     // Retrieve the total file size
-    _infile.seekg(0, std::ios::end);
-    _fileLength = _infile.tellg();
+    _fileLength = FileLength(_infile);
     if (_fileLength < 36) {
         throw std::runtime_error("Recording file is too small");
     }
-    _infile.seekg(0, std::ios::beg);
 
     // Check the magic bytes at the beginning of the file
     std::array<char, MAGIC.size()> magic;
