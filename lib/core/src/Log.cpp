@@ -45,20 +45,4 @@ void Log(LogLevel level, const std::string& str) {
     }
 }
 
-inline void LOG_DEBUG(const std::string& str) {
-    Log(LogLevel::Debug, str);
-}
-
-inline void LOG_INFO(const std::string& str) {
-    Log(LogLevel::Info, str);
-}
-
-inline void LOG_WARN(const std::string& str) {
-    Log(LogLevel::Warn, str);
-}
-
-inline void LOG_ERROR(const std::string& str) {
-    Log(LogLevel::Error, str);
-}
-
 }  // namespace ref

@@ -18,17 +18,25 @@ bool IsStdoutATerminal();
 
 void Log(LogLevel level, const std::string& str);
 
-inline void LOG_DEBUG(const std::string& str);
-
-inline void LOG_INFO(const std::string& str);
-
-inline void LOG_WARN(const std::string& str);
-
-inline void LOG_ERROR(const std::string& str);
-
 template<typename... Args>
 inline void Log(LogLevel level, const char* fmt, const Args&... args) {
     Log(level, Format(fmt, args...));
+}
+
+inline void LOG_DEBUG(const std::string& str) {
+    Log(LogLevel::Debug, str);
+}
+
+inline void LOG_INFO(const std::string& str) {
+    Log(LogLevel::Info, str);
+}
+
+inline void LOG_WARN(const std::string& str) {
+    Log(LogLevel::Warn, str);
+}
+
+inline void LOG_ERROR(const std::string& str) {
+    Log(LogLevel::Error, str);
 }
 
 template<typename... Args>
