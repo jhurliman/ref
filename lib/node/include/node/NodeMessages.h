@@ -27,8 +27,7 @@ struct NodeMessages {
 
         const auto& it = idToTopicMap.find(id);
         if (it != idToTopicMap.end()) {
-            const std::string& topicName = it->second.first;
-            recording.write<Message, MessageT>(topicName, *msg);
+            recording.write<Message, MessageT>(it->second.name, *msg);
         }
     };
 };

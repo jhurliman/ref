@@ -4,7 +4,6 @@
 
 #include <core/Optional.h>
 #include <json/json.h>
-#include <recording/TypeDatabase_generated.h>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -13,8 +12,18 @@ namespace ref {
 
 class NodeDefinition {
 public:
+    struct TopicType {
+        std::string name;
+        std::string hash;
+        std::vector<uint8_t> schema;
+    };
+
+    struct Topic {
+        std::string name;
+        TopicType type;
+    };
+
     using TopicName = std::string;
-    using Topic = std::pair<TopicName, messages::recording::TypeDefinitionT>;
     using InputOutputID = std::string;
     using TimeoutSec = double;
     using TriggerRequirements = std::pair<std::vector<TopicName>, TimeoutSec>;

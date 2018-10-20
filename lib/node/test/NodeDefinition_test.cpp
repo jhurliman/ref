@@ -17,7 +17,14 @@ TEST(NodeDefinition, OneNode) {
     EXPECT_EQ(1.0, def.triggers().second);
     EXPECT_EQ(0, def.parameters().size());
     EXPECT_EQ(0, def.inputs().size());
-    EXPECT_EQ(1, def.outputs().size());
+    ASSERT_EQ(1, def.outputs().size());
+    EXPECT_EQ("x", def.outputs().begin()->first);
+
+    auto& topic = def.outputs().begin()->second;
+    EXPECT_EQ("/x", topic.name);
+    EXPECT_EQ("basic/BoolValue", topic.type.name);
+    EXPECT_EQ("a66c7ec12e42a654ff9f38b5e432948449b20f6cc6ca088ae74bbdb0cca34d99", topic.type.hash);
+    EXPECT_EQ(448, topic.type.schema.size());
 }
 
 }  // namespace ref

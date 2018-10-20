@@ -1,8 +1,14 @@
 #include "node/NodeDefinition.h"
 
+#include <core/FileUtils.h>
 #include <core/Log.h>
+#include <fstream>
+#include <third_party/sha256.h>
 
 namespace ref {
+
+constexpr const char* BINARY_SCHEMA_PREFIX = "lib/messages/definitions/";
+constexpr const char* BINARY_SCHEMA_SUFFIX = ".bfbs";
 
 Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
     std::string name = nodeJson["name"].asString();
@@ -39,7 +45,8 @@ Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
                 return {};
             }
 
-            inputs[id] = std::move(*input);
+            const Topic topic = *input;
+            inputs[id] = topic;
         }
     }
 
@@ -54,7 +61,8 @@ Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
                 return {};
             }
 
-            outputs[id] = std::move(*output);
+            const Topic topic = *output;
+            outputs[id] = topic;
         }
     }
 
@@ -87,21 +95,41 @@ const NodeDefinition::IDToTopicMap& NodeDefinition::outputs() const {
 
 Optional<NodeDefinition::Topic> NodeDefinition::parseInputOutput(const Json::Value& entry) {
     if (!entry.isObject()) {
+        LOG_ERROR("Input/output entry is not an object");
         return {};
     }
 
     const auto& topicName = entry["topic"].asString();
     const auto& typeStr = entry["type"].asString();
     if (topicName.empty() || typeStr.empty()) {
+        LOG_ERROR("Missing 'topic' or 'type' field(s)");
         return {};
     }
 
-    messages::recording::TypeDefinitionT type;
-    type.name = typeStr;
-    type.schema.resize(42);
-    type.hash = "FIXMETOO";
+    Topic topic;
+    topic.name = topicName;
+    topic.type.name = typeStr;
 
-    return std::make_pair(topicName, type);
+    // Load the binary schema for this type
+    const std::string path =
+            std::string(BINARY_SCHEMA_PREFIX) + typeStr + std::string(BINARY_SCHEMA_SUFFIX);
+    std::ifstream schema(path, std::ifstream::binary);
+    if (!schema.is_open()) {
+        LOG_ERROR("Cannot open schema %s", path);
+        return {};
+    }
+    topic.type.schema.reserve(FileLength(schema));
+    std::copy(
+            std::istream_iterator<uint8_t>(schema),
+            std::istream_iterator<uint8_t>(),
+            std::back_inserter(topic.type.schema));
+
+    // Compute the SHA-256 hash of the binary schema
+    SHA256 sha256;
+    sha256(topic.type.schema.data(), topic.type.schema.size());
+    topic.type.hash = sha256.getHash();
+
+    return topic;
 }
 
 NodeDefinition::NodeDefinition(

@@ -5,5 +5,6 @@ cc_library(
         "include/**/*.h",
         "include/**/*.hpp",
     ]),
+    srcs = glob(["src/**/*.cpp"]),
     strip_include_prefix = "include",
 )

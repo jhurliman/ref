@@ -25,30 +25,37 @@ Graph::Graph(const std::vector<NodeDefinition>& nodeDefs) {
 }
 
 void Graph::initialize(const std::vector<NodeDefinition>& nodeDefs) {
+    std::unordered_map<std::string, NodeDefinition::Topic> topicsMap;
+    std::unordered_map<std::string, NodeDefinition::TopicType> typesMap;
+
+    auto processIDsAndTopics = [&](const std::string nodeVertex,
+                                   const NodeDefinition::IDToTopicMap& idsAndTopics) {
+        for (auto&& idAndTopic : idsAndTopics) {
+            const NodeDefinition::Topic& topic = idAndTopic.second;
+            std::string topicVertex = "topic:" + topic.name;
+
+            topicsMap[topic.name] = topic;
+            typesMap[topic.type.name] = topic.type;
+
+            _graph.insert_vertex(topicVertex);
+            _graph.insert_edge(topicVertex, nodeVertex);
+        }
+    };
+
+    // Construct the graph of nodes, topics, and the edges between them
     for (auto&& def : nodeDefs) {
         _nodes.push_back(def);
-
-        std::ifstream schema("lib/messages/definitions/recording/Header.bfbs", std::ifstream::binary);
-        ASSERT_ALWAYS(schema.is_open());
-
-        // Construct the graph of nodes, topics, and the edges between them
 
         const std::string nodeVertex = "node:" + def.name();
         _graph.insert_vertex(nodeVertex);
 
-        for (auto&& idAndTopic : def.inputs()) {
-            const NodeDefinition::Topic& topic = idAndTopic.second;
-            const std::string topicVertex = "topic:" + topic.first;
-            _graph.insert_vertex(topicVertex);
-            _graph.insert_edge(topicVertex, nodeVertex);
-        }
+        processIDsAndTopics(nodeVertex, def.inputs());
+        processIDsAndTopics(nodeVertex, def.outputs());
+    }
 
-        for (auto&& idAndTopic : def.outputs()) {
-            const NodeDefinition::Topic& topic = idAndTopic.second;
-            const std::string topicVertex = "topic:" + topic.first;
-            _graph.insert_vertex(topicVertex);
-            _graph.insert_edge(nodeVertex, topicVertex);
-        }
+    _topics.reserve(topicsMap.size());
+    for (auto&& entry : topicsMap) {
+        _topics.push_back(entry.second);
     }
 }
 
@@ -56,11 +63,11 @@ const std::vector<NodeDefinition>& Graph::nodes() {
     return _nodes;
 }
 
-const std::vector<messages::recording::TopicDefinition>& Graph::topics() {
+const std::vector<NodeDefinition::Topic>& Graph::topics() {
     return _topics;
 }
 
-const std::vector<messages::recording::TypeDefinition>& Graph::types() {
+const std::vector<NodeDefinition::TopicType>& Graph::types() {
     return _types;
 }
 

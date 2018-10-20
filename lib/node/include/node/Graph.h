@@ -17,8 +17,8 @@ public:
     Graph(const std::vector<NodeDefinition>& nodeDefs);
 
     const std::vector<NodeDefinition>& nodes();
-    const std::vector<messages::recording::TopicDefinition>& topics();
-    const std::vector<messages::recording::TypeDefinition>& types();
+    const std::vector<NodeDefinition::Topic>& topics();
+    const std::vector<NodeDefinition::TopicType>& types();
     void writeDot(std::ostream& stream);
 
 private:
@@ -26,8 +26,8 @@ private:
 
     NGraph::sGraph _graph;
     std::vector<NodeDefinition> _nodes;
-    std::vector<messages::recording::TopicDefinition> _topics;
-    std::vector<messages::recording::TypeDefinition> _types;
+    std::vector<NodeDefinition::Topic> _topics;
+    std::vector<NodeDefinition::TopicType> _types;
 };
 
 }  // namespace ref
