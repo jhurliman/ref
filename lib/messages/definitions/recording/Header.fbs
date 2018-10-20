@@ -1,0 +1,11 @@
+include "TopicDatabase.fbs";
+include "TypeDatabase.fbs";
+
+namespace ref.messages.recording;
+
+table Header {
+    types:TypeDatabase (required);
+    topics:TopicDatabase (required);
+}
+
+root_type Header;

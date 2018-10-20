@@ -1,0 +1,11 @@
+include "../Header.fbs";
+
+namespace ref.messages.basic;
+
+table BoolValue {
+    header:Header;
+
+    value:bool;
+}
+
+root_type BoolValue;

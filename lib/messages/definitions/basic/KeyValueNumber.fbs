@@ -1,0 +1,12 @@
+include "../Header.fbs";
+
+namespace ref.messages.basic;
+
+table KeyValueNumber {
+    header:Header;
+
+    key:string;
+    value:double;
+}
+
+root_type KeyValueNumber;

@@ -1,0 +1,13 @@
+namespace ref.messages.recording;
+
+table TypeDefinition {
+    name:string;
+    hash:string;
+    schema:[ubyte];
+}
+
+table TypeDatabase {
+    definitions:[TypeDefinition];
+}
+
+root_type TypeDatabase;

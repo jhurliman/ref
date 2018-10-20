@@ -1,0 +1,41 @@
+{
+  "nodes": [
+    {
+      "name": "camera_main",
+      "type": "WebcamDriver",
+      "trigger": {
+        "topics": [],
+        "timeout": 0.01
+      },
+      "parameters": {
+        // Logitech HD Pro Webcam C920
+        "vendor_id": 1133,
+        "product_id": 2093,
+        "serial_number": "1729A01F"
+      },
+      "inputs": {},
+      "outputs": {
+        "image_compressed": {
+          "topic": "/camera_main/color/image_compressed",
+          "type": "sensors/Image"
+        },
+        "camera_info": {
+          "topic": "/camera_main/color/camera_info",
+          "type": "sensors/CameraInfo"
+        }
+      }
+    },
+    {
+      "name": "recorder",
+      "type": "Recorder",
+      "trigger": "*",
+      "parameters": {
+        "folder": "/tmp",
+        "file_pattern": "recording_%s.rec",
+        "max_bytes": 0
+      },
+      "inputs": "*",
+      "outputs": {}
+    }
+  ]
+}

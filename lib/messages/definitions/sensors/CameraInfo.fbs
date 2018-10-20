@@ -1,0 +1,33 @@
+include "../Header.fbs";
+
+namespace ref.messages.sensors;
+
+struct RegionOfInterest {
+    x_offset:uint;
+    y_offset:uint;
+    height:uint;
+    width:uint;
+
+    do_rectify:bool;
+}
+
+table CameraInfo {
+    header:Header;
+
+    height:uint;
+    width:uint;
+
+    distortion_model:string;
+
+    D:[double];
+    K:[double];
+    R:[double];
+    P:[double];
+
+    binning_x:uint;
+    binning_y:uint;
+
+    roi:RegionOfInterest;
+}
+
+root_type CameraInfo;

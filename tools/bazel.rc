@@ -1,0 +1,34 @@
+BAZEL_USE_CPP_ONLY_TOOLCHAIN=1
+
+# Hardcode environment variables passed to actions
+build --action_env=PATH="/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+build --action_env=LD_LIBRARY_PATH=""
+build --experimental_strict_action_env=true
+
+# TensorFlow
+build --define=using_cuda=true --define=using_cuda_clang=true
+
+# Default to optimized builds with asserts
+build --compilation_mode dbg
+
+# Always complain about undeclared headers
+build --strict_system_includes
+
+# Default to publicly visible packages
+build --default_visibility=public
+
+# Create symlinks under deploy/{bin,testlogs,genfiles} instead of top-level
+build --symlink_prefix=deploy/
+
+# Only show warnings from our code, not from third-party code
+build --output_filter="^//"
+
+# Don't add debug symbols to TensorFlow
+build --per_file_copt external/org_tensorflow/.*\.cc@-g0
+
+# Disable Python bytecode caching during tests. See
+# <https://stackoverflow.com/questions/27630730/best-way-to-avoid-stale-pyc-files>
+test --test_env=PYTHONDONTWRITEBYTECODE=1
+
+# Show output of tests with errors
+test --test_output=errors

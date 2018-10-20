@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "name": "a",
+      "type": "A",
+      "trigger": { "topics": [], "timeout": 1.0 },
+      "inputs": {},
+      "outputs": {
+        "x": {
+          "topic": "/x",
+          "type": "basic/BoolValue"
+        }
+      }
+    },
+    {
+      "name": "b",
+      "type": "B",
+      "trigger": { "topics": ["/x"], "timeout": 0.0 },
+      "inputs": {
+        "y": {
+          "topic": "/x",
+          "type": "basic/BoolValue"
+        }
+      },
+      "outputs": {}
+    }
+  ]
+}

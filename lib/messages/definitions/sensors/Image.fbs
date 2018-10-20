@@ -1,0 +1,18 @@
+include "../Header.fbs";
+
+namespace ref.messages.sensors;
+
+table Image {
+    header:Header;
+
+    height:uint;
+    width:uint;
+
+    encoding:string;
+    is_bigendian:bool;
+
+    step:uint;
+    data:[ubyte];
+}
+
+root_type Image;

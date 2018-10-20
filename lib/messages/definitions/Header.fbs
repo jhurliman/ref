@@ -1,0 +1,9 @@
+namespace ref.messages;
+
+table Header {
+    sensor_stamp:ulong;
+    publish_stamp:ulong;
+    frame_id:string;
+}
+
+root_type Header;

@@ -1,0 +1,12 @@
+namespace ref.messages.recording;
+
+table TopicDefinition {
+    topic_name:string (key);
+    type_index:uint;
+}
+
+table TopicDatabase {
+    definitions:[TopicDefinition];
+}
+
+root_type TopicDatabase;
