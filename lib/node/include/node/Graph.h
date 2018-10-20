@@ -4,8 +4,6 @@
 
 #include <json/json.h>
 #include <ostream>
-#include <recording/TopicDatabase_generated.h>
-#include <recording/TypeDatabase_generated.h>
 #include <third_party/ngraph.hpp>
 #include <vector>
 

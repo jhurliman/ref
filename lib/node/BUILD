@@ -8,7 +8,6 @@ cc_library(
     deps = [
         "@jsoncpp",
         "//lib/core:core_lib",
-        "//lib/messages:generated_msgs",
         "//lib/messages:messages_lib",
         "//third_party:third_party_lib",
     ],
