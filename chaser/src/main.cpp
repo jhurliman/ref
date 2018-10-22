@@ -22,6 +22,9 @@ void loop() {
     configFile >> config;
 
     ref::Graph g("deploy/bin/chaser/chaser.runfiles/ref_ws", config["nodes"]);
+
+    g.writeDot(std::cout);
+
     ref::WebcamDriver webcam{g.nodes()[0], g};
     ref::Recorder recorder{g.nodes()[1], g};
 

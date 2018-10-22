@@ -84,7 +84,7 @@ const std::vector<NodeDefinition::TopicType>& Graph::types() const {
 }
 
 void Graph::writeDot(std::ostream& stream) const {
-    constexpr std::string_view prologue = "digraph G {\n";
+    constexpr std::string_view prologue = "digraph G {\n  rankdir=\"LR\";\n";
     constexpr std::string_view epilogue = "}\n";
     using GraphIterator = NGraph::sGraph::const_iterator;
 
@@ -97,9 +97,9 @@ void Graph::writeDot(std::ostream& stream) const {
         std::string shortName = vertex.substr(vertex.find(':') + 1);
 
         if (vertex.find("node:") != std::string::npos) {
-            line = "  " + shortName + " [shape=box];\n";
+            line = "  \"" + vertex + "\" [shape=box];\n";
         } else {
-            line = "  " + shortName + ";\n";
+            line = "  \"" + vertex + "\";\n";
         }
         stream.write(line.c_str(), line.size());
     }
@@ -110,10 +110,9 @@ void Graph::writeDot(std::ostream& stream) const {
         auto& vertex = it->first;
         auto& insOuts = it->second;
         auto& outputs = insOuts.second;
-        std::string shortName = vertex.substr(vertex.find(':') + 1);
 
         for (auto& outVertex : outputs) {
-            std::string line = "  " + shortName + " -> " + outVertex + ";\n";
+            std::string line = "  \"" + vertex + "\" -> \"" + outVertex + "\";\n";
             stream.write(line.c_str(), line.size());
         }
     }
