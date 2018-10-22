@@ -5,13 +5,13 @@
 
 namespace ref {
 
-Graph::Graph(const Json::Value& nodesArray) {
+Graph::Graph(const std::string& dataDir, const Json::Value& nodesArray) {
     if (!nodesArray.isArray()) {
         throw std::runtime_error("Graph initialization requires a JSON array");
     }
 
     for (auto&& nodeJson : nodesArray) {
-        auto res = NodeDefinition::Create(nodeJson);
+        auto res = NodeDefinition::Create(dataDir, nodeJson);
         if (!res) {
             throw std::runtime_error(
                     Format("Invalid node definition:\n%s", nodeJson.toStyledString()));

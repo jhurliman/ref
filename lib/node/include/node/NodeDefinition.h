@@ -35,7 +35,7 @@ public:
     using IDToTopicMap = std::unordered_map<InputOutputID, Topic>;
     using TopicList = std::vector<std::string>;
 
-    static Optional<NodeDefinition> Create(const Json::Value& nodeJson);
+    static Optional<NodeDefinition> Create(const std::string& dataDir, const Json::Value& nodeJson);
 
     const std::string& name() const;
     const std::string& nodeType() const;
@@ -55,7 +55,7 @@ private:
     IDToTopicMap _outputs;
     std::unique_ptr<TopicList> _triggeringTopics;
 
-    static Optional<Topic> parseInputOutput(const Json::Value& entry);
+    static Optional<Topic> parseInputOutput(const std::string& dataDir, const Json::Value& entry);
 
     NodeDefinition(
             const std::string& name,

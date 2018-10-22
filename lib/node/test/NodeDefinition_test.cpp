@@ -9,7 +9,7 @@ namespace ref {
 
 TEST(NodeDefinition, OneNode) {
     Json::Value json = ParseJSONFile("lib/node/test/data/one_node.jsonc");
-    Optional<NodeDefinition> defPtr = NodeDefinition::Create(json["nodes"][0]);
+    Optional<NodeDefinition> defPtr = NodeDefinition::Create(".", json["nodes"][0]);
     ASSERT_TRUE(defPtr.has_value());
 
     const NodeDefinition& def = *defPtr;
@@ -31,7 +31,7 @@ TEST(NodeDefinition, OneNode) {
 
 TEST(NodeDefinition, WildcardNode) {
     Json::Value json = ParseJSONFile("lib/node/test/data/wildcard_graph.jsonc");
-    Optional<NodeDefinition> defPtr = NodeDefinition::Create(json["nodes"][0]);
+    Optional<NodeDefinition> defPtr = NodeDefinition::Create(".", json["nodes"][0]);
     ASSERT_TRUE(defPtr.has_value());
 
     NodeDefinition& def = *defPtr;
@@ -44,7 +44,7 @@ TEST(NodeDefinition, WildcardNode) {
     EXPECT_EQ(0, def.inputs().size());
     ASSERT_EQ(0, def.outputs().size());
 
-    const Graph g(json["nodes"]);
+    const Graph g(".", json["nodes"]);
 
     EXPECT_EQ(3, g.nodes().size());
     EXPECT_EQ(2, g.topics().size());

@@ -11,7 +11,7 @@ namespace ref {
 
 class Graph {
 public:
-    Graph(const Json::Value& nodesArray);
+    Graph(const std::string& dataDir, const Json::Value& nodesArray);
 
     const std::vector<NodeDefinition>& nodes() const;
     const std::vector<NodeDefinition::Topic>& topics() const;

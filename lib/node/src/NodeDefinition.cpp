@@ -9,10 +9,11 @@
 
 namespace ref {
 
-constexpr const char* BINARY_SCHEMA_PREFIX = "lib/messages/definitions/";
-constexpr const char* BINARY_SCHEMA_SUFFIX = ".bfbs";
+constexpr const char* BINARY_SCHEMA_PATH = "lib/messages/definitions/";
+constexpr const char* BINARY_SCHEMA_EXT = ".bfbs";
 
-Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
+Optional<NodeDefinition>
+NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) {
     std::string name = nodeJson["name"].asString();
     if (name.empty()) {
         LOG_ERROR("NodeDefinition is missing field 'name'");
@@ -41,7 +42,7 @@ Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
     if (inputsJson.isObject()) {
         for (auto&& it = inputsJson.begin(); it != inputsJson.end(); ++it) {
             const std::string& id = it.key().asString();
-            const auto& input = NodeDefinition::parseInputOutput(*it);
+            const auto& input = NodeDefinition::parseInputOutput(dataDir, *it);
             if (!input) {
                 LOG_ERROR(Format("Invalid input '%s'", id));
                 return {};
@@ -57,7 +58,7 @@ Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
     if (outputsJson.isObject()) {
         for (auto&& it = outputsJson.begin(); it != outputsJson.end(); ++it) {
             const std::string& id = it.key().asString();
-            const auto& output = NodeDefinition::parseInputOutput(*it);
+            const auto& output = NodeDefinition::parseInputOutput(dataDir, *it);
             if (!output) {
                 LOG_ERROR(Format("Invalid output '%s'", id));
                 return {};
@@ -117,7 +118,8 @@ const NodeDefinition::TopicList& NodeDefinition::triggeringTopics(const Graph& g
     return *_triggeringTopics;
 }
 
-Optional<NodeDefinition::Topic> NodeDefinition::parseInputOutput(const Json::Value& entry) {
+Optional<NodeDefinition::Topic>
+NodeDefinition::parseInputOutput(const std::string& dataDir, const Json::Value& entry) {
     if (!entry.isObject()) {
         LOG_ERROR("Input/output entry is not an object");
         return {};
@@ -135,8 +137,8 @@ Optional<NodeDefinition::Topic> NodeDefinition::parseInputOutput(const Json::Val
     topic.type.name = typeStr;
 
     // Load the binary schema for this type
-    const std::string path =
-            std::string(BINARY_SCHEMA_PREFIX) + typeStr + std::string(BINARY_SCHEMA_SUFFIX);
+    const std::string path = (dataDir.empty() ? std::string() : dataDir + "/") + BINARY_SCHEMA_PATH
+            + typeStr + BINARY_SCHEMA_EXT;
     std::ifstream schema(path, std::ifstream::binary);
     if (!schema.is_open()) {
         LOG_ERROR("Cannot open schema %s", path);
