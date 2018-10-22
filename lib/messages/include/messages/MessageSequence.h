@@ -1,3 +1,5 @@
+#pragma once
+
 #include "RecordedMessage.h"
 
 #include <fstream>
@@ -5,8 +7,14 @@
 
 namespace ref {
 
-class MessageSequence : public std::iterator<std::input_iterator_tag, RecordedMessage> {
+class MessageSequence {
 public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = RecordedMessage;
+    using difference_type = void;
+    using pointer = RecordedMessage*;
+    using reference = RecordedMessage&;
+
     MessageSequence(
             const Recording& recording,
             std::ifstream& file,
@@ -17,6 +25,9 @@ public:
 
     RecordedMessage const& operator*() const;
     RecordedMessage const* operator->() const;
+
+    bool operator==(MessageSequence const& other) const;
+    bool operator!=(MessageSequence const& other) const;
 
     MessageSequence& operator++();
     MessageSequence operator++(int);

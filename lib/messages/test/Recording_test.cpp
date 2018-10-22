@@ -25,14 +25,26 @@ uint64_t readULong(std::ifstream& file) {
     return value;
 }
 
-TEST(Recording, Read) {
+TEST(Recording, ReadEmpty) {
+    Recording rec{"lib/messages/test/data/empty.rec"};
+
+    auto expectedVersion = std::make_pair<uint32_t, uint32_t>(1, 0);
+
+    EXPECT_EQ(expectedVersion, rec.version());
+    EXPECT_EQ(Time::FromNanoseconds(0), rec.startTime());
+    EXPECT_EQ(Time::FromNanoseconds(0), rec.endTime());
+    EXPECT_EQ(0, rec.size());
+    EXPECT_EQ(rec.begin(), rec.end());
+}
+
+TEST(Recording, ReadSimple) {
     // FIXME
 }
 
 TEST(Recording, ReadBroken) {
-    EXPECT_THROW({ Recording("messages/test/data/missing.rec"); }, std::runtime_error);
+    EXPECT_THROW({ Recording("lib/messages/test/data/missing.rec"); }, std::runtime_error);
 
-    EXPECT_THROW({ Recording("messages/test/data/zerobytes.rec"); }, std::runtime_error);
+    EXPECT_THROW({ Recording("lib/messages/test/data/zerobytes.rec"); }, std::runtime_error);
 }
 
 TEST(Recording, WriteEmpty) {

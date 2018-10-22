@@ -140,8 +140,8 @@ const Time::TimePoint Recording::endTime() {
     return Time::FromNanoseconds(_endNS);
 }
 
-uint64_t Recording::messageCount() {
-    return _messageCount;
+size_t Recording::size() {
+    return size_t(_messageCount);
 }
 
 const Recording::TypesList& Recording::types() const {
@@ -152,8 +152,12 @@ const Recording::TopicsList& Recording::topics() const {
     return _topics;
 }
 
-const MessageSequence Recording::readMessages() {
+const MessageSequence Recording::begin() {
     return MessageSequence(*this, _infile, _messageOffset, _fileLength);
+}
+
+const MessageSequence Recording::end() {
+    return MessageSequence(*this, _infile, SIZE_MAX, _fileLength);
 }
 
 uint32_t Recording::readUInt() {

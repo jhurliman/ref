@@ -2,6 +2,9 @@
 
 namespace ref {
 
+constexpr size_t INDEX_SIZE = sizeof(uint32_t);
+constexpr size_t LENGTH_SIZE = sizeof(uint32_t);
+
 MessageSequence::MessageSequence(
         const Recording& recording,
         std::ifstream& file,
@@ -13,7 +16,8 @@ MessageSequence::MessageSequence(
         , _curValue(recording, 0, 0) {}
 
 MessageSequence::operator bool() const {
-    return !_done;
+    size_t filePos = _curOffset + INDEX_SIZE + LENGTH_SIZE;
+    return !_done && filePos < _fileLength;
 }
 
 RecordedMessage const& MessageSequence::operator*() const {
@@ -24,13 +28,19 @@ RecordedMessage const* MessageSequence::operator->() const {
     return &_curValue;
 }
 
+bool MessageSequence::operator==(MessageSequence const& other) const {
+    return bool(this) == bool(other);
+}
+
+bool MessageSequence::operator!=(MessageSequence const& other) const {
+    return bool(this) != bool(other);
+}
+
 MessageSequence& MessageSequence::operator++() {
     assert(!_done);
 
-    constexpr size_t INDEX_SIZE = sizeof(uint32_t);
-    constexpr size_t LENGTH_SIZE = sizeof(uint32_t);
-
-    if (_curOffset + INDEX_SIZE + LENGTH_SIZE > _fileLength) {
+    size_t filePos = _curOffset + INDEX_SIZE + LENGTH_SIZE;
+    if (filePos >= _fileLength) {
         _done = true;
         return *this;
     }
@@ -41,7 +51,7 @@ MessageSequence& MessageSequence::operator++() {
     // Message length
     _file.read(reinterpret_cast<char*>(&_curValue._length), LENGTH_SIZE);
 
-    if (_curOffset + INDEX_SIZE + LENGTH_SIZE + _curValue._length > _fileLength) {
+    if (filePos + _curValue._length > _fileLength) {
         _done = true;
         return *this;
     }

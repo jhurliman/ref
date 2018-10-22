@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MessageSequence.h"
+
 #include <array>
 #include <core/Format.h>
 #include <core/Optional.h>
@@ -14,8 +16,6 @@
 #include <vector>
 
 namespace ref {
-
-class MessageSequence;
 
 constexpr uint32_t RECORDING_MAJOR = 1;
 constexpr uint32_t RECORDING_MINOR = 0;
@@ -42,11 +42,12 @@ public:
     const FileVersion version() const;
     const Time::TimePoint startTime();
     const Time::TimePoint endTime();
-    uint64_t messageCount();
+    size_t size();
     const TypesList& types() const;
     const TopicsList& topics() const;
 
-    const MessageSequence readMessages();
+    const MessageSequence begin();
+    const MessageSequence end();
 
 protected:
     std::string _filename;
