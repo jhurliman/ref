@@ -17,7 +17,6 @@ cc_binary(
         '-std=c++17',
         '-stdlib=libc++',
         '-flto=thin',
-        '-O3',
         '-Wextra',
         '-Wall',
     ],
