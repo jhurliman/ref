@@ -13,6 +13,7 @@ cc_library(
     ],
     deps = [
         "//lib/core:core_lib",
+        "//lib/node:node_lib",
     ],
     copts = REF_COPTS,
 )

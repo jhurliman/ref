@@ -6,6 +6,9 @@ REF_COPTS = [
     '-Wextra',
     '-Weverything',
 
+    # Promote to error
+    '-Werror=return-type',
+
     # Disable
     '-Wno-c++98-compat',
     '-Wno-covered-switch-default',
