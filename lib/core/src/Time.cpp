@@ -10,10 +10,14 @@ namespace Time {
 static const TimePoint EPOCH;
 static bool _HasInitialized = false;
 static TimePoint _SimTime;
-static std::shared_mutex _TimeMutex;
+
+static std::shared_mutex& GetTimeMutex() {
+    static std::shared_mutex timeMutex;
+    return timeMutex;
+}
 
 void Init(Optional<TimePoint> simTime) {
-    std::unique_lock<std::shared_mutex> lock(_TimeMutex);
+    std::unique_lock<std::shared_mutex> lock(GetTimeMutex());
     if (simTime) {
         _SimTime = *simTime;
     }
@@ -21,7 +25,7 @@ void Init(Optional<TimePoint> simTime) {
 }
 
 bool IsValid() {
-    std::shared_lock<std::shared_mutex> lock(_TimeMutex);
+    std::shared_lock<std::shared_mutex> lock(GetTimeMutex());
     return _HasInitialized;
 }
 
@@ -31,6 +35,10 @@ TimePoint NowWall() {
 
 HiResTimePoint NowHiRes() {
     return std::chrono::high_resolution_clock::now();
+}
+
+timespec NowMonotonicTimespec(int64_t nsecOffset) {
+    return NowMonotonicTimespec(uint64_t(nsecOffset));
 }
 
 timespec NowMonotonicTimespec(uint64_t nsecOffset) {
@@ -51,17 +59,18 @@ timespec NowMonotonicTimespec(uint64_t nsecOffset) {
 }
 
 TimePoint Now() {
-    std::shared_lock<std::shared_mutex> lock(_TimeMutex);
+    std::shared_lock<std::shared_mutex> lock(GetTimeMutex());
     return (!_HasInitialized || _SimTime != EPOCH) ? _SimTime : NowWall();
 }
 
 void SetNow(const TimePoint currentTime) {
-    std::unique_lock<std::shared_mutex> lock(_TimeMutex);
+    std::unique_lock<std::shared_mutex> lock(GetTimeMutex());
     _SimTime = currentTime;
 }
 
 uint64_t ToNanoseconds(const TimePoint time) {
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(time.time_since_epoch()).count();
+    auto ns = time.time_since_epoch();
+    return uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(ns).count());
 }
 
 double ToSeconds(const TimePoint time) {
@@ -79,7 +88,10 @@ TimePoint FromSeconds(const double sec) {
 }
 
 TimePoint FromTimeval(const timeval time) {
-    return FromNanoseconds(time.tv_sec * 10e9 + time.tv_usec * 1000);
+    constexpr uint64_t NS_PER_SEC = 10e9;   // nanoseconds per second
+    constexpr uint64_t NS_PER_USEC = 1000;  // nanoseconds per microsecond
+    return FromNanoseconds(
+            uint64_t(time.tv_sec) * NS_PER_SEC + uint64_t(time.tv_usec) * NS_PER_USEC);
 }
 
 double DeltaMS(const TimePoint from, const TimePoint to) {

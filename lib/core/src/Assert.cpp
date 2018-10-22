@@ -50,4 +50,4 @@ void Assert(const char* expression, int lineNumber, const char* filename) noexce
     Assert(expression, lineNumber, filename, nullptr);
 }
 
-};  // namespace ref
+}  // namespace ref

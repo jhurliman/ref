@@ -23,6 +23,7 @@ TimePoint NowWall();
 
 HiResTimePoint NowHiRes();
 
+timespec NowMonotonicTimespec(int64_t nsecOffset);
 timespec NowMonotonicTimespec(uint64_t nsecOffset);
 
 TimePoint Now();

@@ -35,7 +35,7 @@ Recording::Recording(const std::string& filename)
     _messageCount = readULong();
 
     uint32_t varHeaderLength = readUInt();
-    if (varHeaderLength > _fileLength - _infile.tellg()) {
+    if (size_t(varHeaderLength) > _fileLength - size_t(_infile.tellg())) {
         throw std::runtime_error("Invalid variable header length");
     }
 
@@ -182,7 +182,7 @@ void Recording::writeULong(uint64_t value) {
 
 void Recording::buildTopicLookup() {
     for (size_t i = 0; i < _topics.size(); ++i) {
-        _topicIndexMap[_topics[i].topic_name] = i;
+        _topicIndexMap[_topics[i].topic_name] = uint32_t(i);
     }
 }
 

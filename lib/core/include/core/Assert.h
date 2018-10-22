@@ -30,13 +30,13 @@ namespace ref {
 [[noreturn]] __attribute__((cold)) void
 Abort(int lineNumber, const char* filename, const char* message) noexcept;
 
-__attribute__((cold)) void
+[[noreturn]] __attribute__((cold)) void
 Assert(const char* expression,
        int lineNumber,
        const char* filename,
        const std::string_view message) noexcept;
 
-__attribute__((cold)) void
+[[noreturn]] __attribute__((cold)) void
 Assert(const char* expression, int lineNumber, const char* filename) noexcept;
 
 };  // namespace ref

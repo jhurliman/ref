@@ -1,3 +1,4 @@
+load("//:common.bzl", "REF_COPTS")
 
 cc_binary(
     name = "chaser",
@@ -13,11 +14,7 @@ cc_binary(
         "//modules/drivers/webcam:webcam_driver_lib",
         "//modules/system/recorder:recorder_lib",
     ],
-    copts = [
-        '-std=c++17',
-        '-stdlib=libc++',
+    copts = REF_COPTS + [
         '-flto=thin',
-        '-Wextra',
-        '-Wall',
     ],
 )

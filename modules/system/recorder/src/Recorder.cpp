@@ -8,7 +8,7 @@ Recorder::Recorder(const NodeDefinition& def, const Graph& graph) : NodeBase(def
     std::string folder = def.parameters().readString(STRING(folder), "/tmp");
     std::string file_pattern =
             def.parameters().readString(STRING(file_pattern), "recording_%s.rec");
-    int32_t max_bytes = def.parameters().readInt(STRING(max_bytes));
+    // int32_t max_bytes = def.parameters().readInt(STRING(max_bytes));
 
     std::string filename = folder + "/" + Format(file_pattern.c_str(), "001");
 
@@ -34,7 +34,7 @@ Recorder::Recorder(const NodeDefinition& def, const Graph& graph) : NodeBase(def
     _curRecording = std::make_unique<Recording>(filename, std::move(types), std::move(topics));
 }
 
-void Recorder::tick(const NodeMessages& input, NodeMessages* output) {
+void Recorder::tick(const NodeMessages& input, NodeMessages*) {
     input.record(*_curRecording);
 }
 

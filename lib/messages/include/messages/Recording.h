@@ -58,7 +58,7 @@ protected:
     uint64_t _startNS = 0;
     uint64_t _endNS = 0;
     uint64_t _messageCount = 0;
-    size_t _messageOffset = 0;
+    std::streampos _messageOffset = 0;
     size_t _fileLength = 0;
     TypesList _types;
     TopicsList _topics;

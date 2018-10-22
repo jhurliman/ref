@@ -11,7 +11,7 @@
 #include <time.h>
 #include <unistd.h>
 
-void loop() {
+static void loop() {
     using namespace std::chrono_literals;
 
     Json::Value config;
@@ -30,15 +30,13 @@ void loop() {
 
     ref::Time::HiResTimePoint start = ref::Time::NowHiRes();
     ref::Time::HiResTimePoint lastTick = start;
-    ref::Time::HiResTimePoint now;
     do {
-        now = ref::Time::NowHiRes();
-        auto elapsed = now - lastTick;
+        auto nowHiRes = ref::Time::NowHiRes();
+        auto now = ref::Time::Now();
+        auto elapsed = nowHiRes - lastTick;
         if (elapsed >= 10ms) {
-            lastTick = now;
+            lastTick = nowHiRes;
             elapsed = elapsed % 10ms;
-
-            auto now = ref::Time::Now();
 
             ref::NodeMessages nullIn{now, {}};
             ref::WebcamDriverOutput camOutput{now, webcam.definition().outputs()};

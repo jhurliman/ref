@@ -18,7 +18,7 @@ public:
     MessageSequence(
             const Recording& recording,
             std::ifstream& file,
-            size_t messageOffset,
+            std::streampos messageOffset,
             size_t fileLength);
 
     explicit operator bool() const;

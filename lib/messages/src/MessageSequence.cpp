@@ -8,10 +8,10 @@ constexpr size_t LENGTH_SIZE = sizeof(uint32_t);
 MessageSequence::MessageSequence(
         const Recording& recording,
         std::ifstream& file,
-        size_t messageOffset,
+        std::streampos messageOffset,
         size_t fileLength)
         : _file(file)
-        , _curOffset(messageOffset)
+        , _curOffset(size_t(messageOffset))
         , _fileLength(fileLength)
         , _curValue(recording, 0, 0) {}
 

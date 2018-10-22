@@ -69,6 +69,10 @@ void Graph::initialize() {
             _graph.insert_edge(topicVertex, nodeVertex);
         }
     }
+
+    // FIXME: Populate _types
+
+    // FIXME: Populate _executionSteps
 }
 
 const std::vector<NodeDefinition>& Graph::nodes() const {
@@ -86,13 +90,12 @@ const std::vector<NodeDefinition::TopicType>& Graph::types() const {
 void Graph::writeDot(std::ostream& stream) const {
     constexpr std::string_view prologue = "digraph G {\n  rankdir=\"LR\";\n";
     constexpr std::string_view epilogue = "}\n";
-    using GraphIterator = NGraph::sGraph::const_iterator;
 
     stream.write(prologue.data(), prologue.size());
 
     // Print all the vertices first
-    for (GraphIterator it = _graph.begin(); it != _graph.end(); it++) {
-        auto& vertex = it->first;
+    for (auto&& it : _graph) {
+        auto& vertex = it.first;
         std::string line;
         std::string shortName = vertex.substr(vertex.find(':') + 1);
 
@@ -101,19 +104,19 @@ void Graph::writeDot(std::ostream& stream) const {
         } else {
             line = "  \"" + vertex + "\";\n";
         }
-        stream.write(line.c_str(), line.size());
+        stream.write(line.c_str(), std::streamsize(line.size()));
     }
     stream.write("\n", 1);
 
     // Print the edges
-    for (GraphIterator it = _graph.begin(); it != _graph.end(); it++) {
-        auto& vertex = it->first;
-        auto& insOuts = it->second;
+    for (auto&& it : _graph) {
+        auto& vertex = it.first;
+        auto& insOuts = it.second;
         auto& outputs = insOuts.second;
 
         for (auto& outVertex : outputs) {
             std::string line = "  \"" + vertex + "\" -> \"" + outVertex + "\";\n";
-            stream.write(line.c_str(), line.size());
+            stream.write(line.c_str(), std::streamsize(line.size()));
         }
     }
     stream.write(epilogue.data(), epilogue.size());
