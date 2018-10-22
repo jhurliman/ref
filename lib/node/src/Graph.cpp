@@ -2,7 +2,6 @@
 
 #include <core/Assert.h>
 #include <core/Format.h>
-#include <fstream>
 
 namespace ref {
 
@@ -15,7 +14,7 @@ Graph::Graph(const Json::Value& nodesArray) {
         auto res = NodeDefinition::Create(nodeJson);
         if (!res) {
             throw std::runtime_error(
-                    Format("Invalid node definition: %s", nodeJson.toStyledString()));
+                    Format("Invalid node definition:\n%s", nodeJson.toStyledString()));
         }
 
         auto& nodeDef = *res;
@@ -33,9 +32,15 @@ void Graph::initialize() {
     std::unordered_map<std::string, NodeDefinition::Topic> topicsMap;
     std::unordered_map<std::string, NodeDefinition::TopicType> typesMap;
 
-    auto processIDsAndTopics = [&](const std::string nodeVertex,
-                                   const NodeDefinition::IDToTopicMap& idsAndTopics) {
-        for (auto&& idAndTopic : idsAndTopics) {
+    // First pass construction of the graph of nodes, topics, and the edges
+    // between them. We need the full set of published (output) topics before
+    // matching against triggers, which is why this is done in two passes
+    for (const NodeDefinition& def : _nodes) {
+        const std::string nodeVertex = "node:" + def.name();
+        _graph.insert_vertex(nodeVertex);
+
+        // This node -> output topics
+        for (auto&& idAndTopic : def.outputs()) {
             const NodeDefinition::Topic& topic = idAndTopic.second;
             std::string topicVertex = "topic:" + topic.name;
 
@@ -43,22 +48,26 @@ void Graph::initialize() {
             typesMap[topic.type.name] = topic.type;
 
             _graph.insert_vertex(topicVertex);
-            _graph.insert_edge(topicVertex, nodeVertex);
+            _graph.insert_edge(nodeVertex, topicVertex);
         }
-    };
-
-    // Construct the graph of nodes, topics, and the edges between them
-    for (const NodeDefinition& def : _nodes) {
-        const std::string nodeVertex = "node:" + def.name();
-        _graph.insert_vertex(nodeVertex);
-
-        processIDsAndTopics(nodeVertex, def.inputs());
-        processIDsAndTopics(nodeVertex, def.outputs());
     }
 
+    // Convert topicsMap to a vector
     _topics.reserve(topicsMap.size());
     for (auto&& entry : topicsMap) {
         _topics.push_back(entry.second);
+    }
+
+    // Second pass, connecting matching input topics to each node. This must
+    // happen after _topics has been fully populated
+    for (NodeDefinition& def : _nodes) {
+        const std::string nodeVertex = "node:" + def.name();
+
+        // Trigger topics -> this node
+        for (auto&& topicName : def.triggeringTopics(*this)) {
+            std::string topicVertex = "topic:" + topicName;
+            _graph.insert_edge(topicVertex, nodeVertex);
+        }
     }
 }
 

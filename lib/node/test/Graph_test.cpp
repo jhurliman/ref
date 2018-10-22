@@ -5,6 +5,7 @@
 
 namespace ref {
 
+// FIXME
 // TEST(Graph, OneNode) {
 //     Json::Value json = ParseJSONFile("lib/node/test/data/one_node.jsonc");
 //     Graph g(json["nodes"]);
