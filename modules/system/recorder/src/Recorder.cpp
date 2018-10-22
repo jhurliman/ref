@@ -4,19 +4,34 @@
 
 namespace ref {
 
-Recorder::Recorder(const NodeDefinition& def) : NodeBase(def) {
+Recorder::Recorder(const NodeDefinition& def, const Graph& graph) : NodeBase(def, graph) {
     std::string folder = def.parameters().readString(STRING(folder), "/tmp");
-    std::string file_pattern = def.parameters().readString(STRING(file_pattern), "recording_%s.rec");
+    std::string file_pattern =
+            def.parameters().readString(STRING(file_pattern), "recording_%s.rec");
     int32_t max_bytes = def.parameters().readInt(STRING(max_bytes));
 
     std::string filename = folder + "/" + Format(file_pattern.c_str(), "001");
 
-    // FIXME: Recorder needs to be able to fetch the entire set of types and
-    // topics used in a launch graph
+    std::unordered_map<std::string, size_t> typeMap;
     Recording::TypesList types;
     Recording::TopicsList topics;
 
-    _curRecording = std::make_unique<Recording>(filename, types, topics);
+    for (auto&& entry : graph.types()) {
+        messages::recording::TypeDefinitionT type;
+        type.name = entry.name;
+        type.hash = entry.hash;
+        type.schema = entry.schema;
+        types.push_back(std::move(type));
+        typeMap[type.name] = types.size() - 1;
+    }
+
+    for (auto&& entry : graph.topics()) {
+        messages::recording::TopicDefinitionT topic;
+        topic.topic_name = entry.name;
+        topic.type_index = uint32_t(typeMap[entry.type.name]);
+    }
+
+    _curRecording = std::make_unique<Recording>(filename, std::move(types), std::move(topics));
 }
 
 void Recorder::tick(const NodeMessages& input, NodeMessages* output) {

@@ -11,7 +11,7 @@ namespace ref {
 
 class Recorder : public NodeBase {
 public:
-    Recorder(const NodeDefinition& def);
+    Recorder(const NodeDefinition& def, const Graph& graph);
 
     void tick(const NodeMessages& input, NodeMessages* output);
 

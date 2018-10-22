@@ -11,7 +11,7 @@ static void callbackWrapper(uvc_frame_t* frame, void* ptr) {
     static_cast<WebcamDriver*>(ptr)->callback(frame);
 }
 
-WebcamDriver::WebcamDriver(const NodeDefinition& def) : NodeBase(def) {
+WebcamDriver::WebcamDriver(const NodeDefinition& def, const Graph& graph) : NodeBase(def, graph) {
     int32_t vendor_id = def.parameters().readInt(STRING(vendor_id));
     int32_t product_id = def.parameters().readInt(STRING(product_id));
     std::string serial_number = def.parameters().readString(STRING(serial_number));

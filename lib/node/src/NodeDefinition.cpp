@@ -1,7 +1,9 @@
 #include "node/NodeDefinition.h"
+#include "node/Graph.h"
 
 #include <core/FileUtils.h>
 #include <core/Log.h>
+#include <core/WildcardMatch.h>
 #include <fstream>
 #include <third_party/sha256.h>
 
@@ -27,10 +29,10 @@ Optional<NodeDefinition> NodeDefinition::Create(const Json::Value& nodeJson) {
     auto& topicsJson = nodeJson["trigger"]["topics"];
     if (topicsJson.isArray()) {
         for (const auto& el : topicsJson) {
-            reqs.first.push_back(el.asString());
+            reqs.topicMatches.push_back(el.asString());
         }
     }
-    reqs.second = nodeJson["trigger"]["timeout"].asDouble();
+    reqs.timeout = nodeJson["trigger"]["timeout"].asDouble();
 
     Parameters params(nodeJson["parameters"]);
 
@@ -91,6 +93,28 @@ const NodeDefinition::IDToTopicMap& NodeDefinition::inputs() const {
 
 const NodeDefinition::IDToTopicMap& NodeDefinition::outputs() const {
     return _outputs;
+}
+
+const NodeDefinition::TopicList& NodeDefinition::triggeringTopics(const Graph& graph) {
+    // Check if the result has already been cached
+    // NOTE: This assumes this method is only called with a single graph!
+    if (_triggeringTopics) {
+        return *_triggeringTopics;
+    }
+
+    std::unique_ptr<TopicList> topics = std::make_unique<TopicList>();
+
+    for (const NodeDefinition::Topic& topic : graph.topics()) {
+        for (const std::string& trigger : _triggers.topicMatches) {
+            if (WildcardMatch(topic.name, trigger)) {
+                (*topics).push_back(topic.name);
+                break;
+            }
+        }
+    }
+
+    _triggeringTopics = std::move(topics);
+    return *_triggeringTopics;
 }
 
 Optional<NodeDefinition::Topic> NodeDefinition::parseInputOutput(const Json::Value& entry) {

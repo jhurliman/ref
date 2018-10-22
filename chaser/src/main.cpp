@@ -1,6 +1,7 @@
 #include <core/Assert.h>
 #include <core/Log.h>
 #include <messages/Recording.h>
+#include <node/Graph.h>
 #include <node/NodeDefinition.h>
 #include <recorder/Recorder.h>
 #include <webcam/WebcamDriver.h>
@@ -20,13 +21,9 @@ void loop() {
     }
     configFile >> config;
 
-    auto nodeDef1 = ref::NodeDefinition::Create(config["nodes"][0]);
-    ASSERT_ALWAYS(nodeDef1, "Failed to parse WebcamDriver node definition");
-    ref::WebcamDriver webcam{*nodeDef1};
-
-    auto nodeDef2 = ref::NodeDefinition::Create(config["nodes"][1]);
-    ASSERT_ALWAYS(nodeDef2, "Failed to parse Recorder node definition");
-    ref::Recorder recorder{*nodeDef2};
+    ref::Graph g(config["nodes"]);
+    ref::WebcamDriver webcam{g.nodes()[0], g};
+    ref::Recorder recorder{g.nodes()[1], g};
 
     ref::Time::HiResTimePoint start = ref::Time::NowHiRes();
     ref::Time::HiResTimePoint lastTick = start;
@@ -40,9 +37,9 @@ void loop() {
 
             auto now = ref::Time::Now();
 
-            ref::NodeMessages input{now, {}};
+            ref::NodeMessages nullIn{now, {}};
             ref::WebcamDriverOutput camOutput{now, webcam.definition().outputs()};
-            webcam.tick(input, &camOutput);
+            webcam.tick(nullIn, &camOutput);
 
             ref::NodeMessages nullOut{now, recorder.definition().outputs()};
             recorder.tick(camOutput, &nullOut);

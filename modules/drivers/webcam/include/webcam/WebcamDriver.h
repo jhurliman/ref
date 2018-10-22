@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 #include <node/NodeBase.h>
+#include <node/NodeMessages.h>
 #include <node/Parameters.h>
 #include <sensors/CameraInfo_generated.h>
 #include <sensors/Image_generated.h>
@@ -25,7 +26,7 @@ struct WebcamDriverOutput : NodeMessages {
 
 class WebcamDriver : public NodeBase {
 public:
-    WebcamDriver(const NodeDefinition& def);
+    WebcamDriver(const NodeDefinition& def, const Graph& graph);
 
     void tick(const NodeMessages& input, WebcamDriverOutput* output);
     void callback(uvc_frame_t* frame);

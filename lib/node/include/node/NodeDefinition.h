@@ -10,6 +10,8 @@
 
 namespace ref {
 
+class Graph;
+
 class NodeDefinition {
 public:
     struct TopicType {
@@ -23,11 +25,15 @@ public:
         TopicType type;
     };
 
-    using TopicName = std::string;
+    struct TriggerRequirements {
+        std::vector<std::string> topicMatches;
+        double timeout;
+    };
+
     using InputOutputID = std::string;
     using TimeoutSec = double;
-    using TriggerRequirements = std::pair<std::vector<TopicName>, TimeoutSec>;
     using IDToTopicMap = std::unordered_map<InputOutputID, Topic>;
+    using TopicList = std::vector<std::string>;
 
     static Optional<NodeDefinition> Create(const Json::Value& nodeJson);
 
@@ -38,6 +44,8 @@ public:
     const IDToTopicMap& inputs() const;
     const IDToTopicMap& outputs() const;
 
+    const TopicList& triggeringTopics(const Graph& graph);
+
 private:
     std::string _name;
     std::string _nodeType;
@@ -45,6 +53,7 @@ private:
     Parameters _parameters;
     IDToTopicMap _inputs;
     IDToTopicMap _outputs;
+    std::unique_ptr<TopicList> _triggeringTopics;
 
     static Optional<Topic> parseInputOutput(const Json::Value& entry);
 

@@ -1,30 +1,35 @@
 #include "node/Graph.h"
 
 #include <core/Assert.h>
+#include <core/Format.h>
 #include <fstream>
 
 namespace ref {
 
 Graph::Graph(const Json::Value& nodesArray) {
-    std::vector<NodeDefinition> nodeDefs;
-
-    if (nodesArray.isArray()) {
-        for (auto&& nodeJson : nodesArray) {
-            const auto& def = NodeDefinition::Create(nodeJson);
-            if (def) {
-                nodeDefs.push_back(std::move(*def));
-            }
-        }
+    if (!nodesArray.isArray()) {
+        throw std::runtime_error("Graph initialization requires a JSON array");
     }
 
-    initialize(nodeDefs);
+    for (auto&& nodeJson : nodesArray) {
+        auto res = NodeDefinition::Create(nodeJson);
+        if (!res) {
+            throw std::runtime_error(
+                    Format("Invalid node definition: %s", nodeJson.toStyledString()));
+        }
+
+        auto& nodeDef = *res;
+        _nodes.push_back(std::move(nodeDef));
+    }
+
+    if (!_nodes.size()) {
+        throw std::runtime_error("Initialized an empty graph");
+    }
+
+    initialize();
 }
 
-Graph::Graph(const std::vector<NodeDefinition>& nodeDefs) {
-    initialize(nodeDefs);
-}
-
-void Graph::initialize(const std::vector<NodeDefinition>& nodeDefs) {
+void Graph::initialize() {
     std::unordered_map<std::string, NodeDefinition::Topic> topicsMap;
     std::unordered_map<std::string, NodeDefinition::TopicType> typesMap;
 
@@ -43,9 +48,7 @@ void Graph::initialize(const std::vector<NodeDefinition>& nodeDefs) {
     };
 
     // Construct the graph of nodes, topics, and the edges between them
-    for (auto&& def : nodeDefs) {
-        _nodes.push_back(def);
-
+    for (const NodeDefinition& def : _nodes) {
         const std::string nodeVertex = "node:" + def.name();
         _graph.insert_vertex(nodeVertex);
 
@@ -59,19 +62,19 @@ void Graph::initialize(const std::vector<NodeDefinition>& nodeDefs) {
     }
 }
 
-const std::vector<NodeDefinition>& Graph::nodes() {
+const std::vector<NodeDefinition>& Graph::nodes() const {
     return _nodes;
 }
 
-const std::vector<NodeDefinition::Topic>& Graph::topics() {
+const std::vector<NodeDefinition::Topic>& Graph::topics() const {
     return _topics;
 }
 
-const std::vector<NodeDefinition::TopicType>& Graph::types() {
+const std::vector<NodeDefinition::TopicType>& Graph::types() const {
     return _types;
 }
 
-void Graph::writeDot(std::ostream& stream) {
+void Graph::writeDot(std::ostream& stream) const {
     constexpr std::string_view prologue = "digraph G {\n";
     constexpr std::string_view epilogue = "}\n";
     using GraphIterator = NGraph::sGraph::const_iterator;

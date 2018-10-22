@@ -28,13 +28,16 @@
     {
       "name": "recorder",
       "type": "Recorder",
-      "trigger": "*",
+      "trigger": {
+        "topics": ["*"],
+        "timeout": 0.0
+      },
       "parameters": {
         "folder": "/tmp",
         "file_pattern": "recording_%s.rec",
         "max_bytes": 0
       },
-      "inputs": "*",
+      "inputs": {},
       "outputs": {}
     }
   ]

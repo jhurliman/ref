@@ -2,10 +2,15 @@
 
 namespace ref {
 
-NodeBase::NodeBase(const NodeDefinition& def) : _definition(def) {}
+NodeBase::NodeBase(const NodeDefinition& def, const Graph& graph)
+        : _definition(def), _graph(graph) {}
 
 const NodeDefinition& NodeBase::definition() const {
     return _definition;
+}
+
+const Graph& NodeBase::graph() const {
+    return _graph;
 }
 
 }  // namespace ref

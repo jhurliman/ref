@@ -17,7 +17,7 @@ struct NodeMessages {
             const Time::TimePoint currentTime,
             const NodeDefinition::IDToTopicMap& idToTopicMap);
 
-    virtual void record(Recording& recording) const = 0;
+    virtual void record(Recording& recording) const;
 
     template<class Message, class MessageT>
     void recordMessage(const std::string& id, const MessageT* msg, Recording& recording) const {
