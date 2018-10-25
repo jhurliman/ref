@@ -12,6 +12,7 @@ REF_COPTS = [
     # Disable
     '-Wno-c++98-compat',
     '-Wno-covered-switch-default',
+    '-Wno-global-constructors',
     '-Wno-exit-time-destructors',
     '-Wno-padded',
     '-Wno-reserved-id-macro',
