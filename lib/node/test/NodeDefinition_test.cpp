@@ -15,10 +15,10 @@ TEST(NodeDefinition, OneNode) {
     const NodeDefinition& def = *defPtr;
     EXPECT_EQ("a", def.name());
     EXPECT_EQ("A", def.nodeType());
-    EXPECT_EQ(0, def.triggers().topicMatches.size());
+    EXPECT_EQ(size_t(0), def.triggers().topicMatches.size());
     EXPECT_EQ(1.0, def.triggers().timeout);
-    EXPECT_EQ(0, def.parameters().size());
-    EXPECT_EQ(0, def.inputs().size());
+    EXPECT_EQ(size_t(0), def.parameters().size());
+    EXPECT_EQ(size_t(0), def.inputs().size());
     ASSERT_EQ(1, def.outputs().size());
     EXPECT_EQ("x", def.outputs().begin()->first);
 
@@ -40,9 +40,9 @@ TEST(NodeDefinition, WildcardNode) {
     ASSERT_EQ(1, def.triggers().topicMatches.size());
     EXPECT_EQ("*", def.triggers().topicMatches[0]);
     EXPECT_EQ(0.0, def.triggers().timeout);
-    EXPECT_EQ(0, def.parameters().size());
-    EXPECT_EQ(0, def.inputs().size());
-    ASSERT_EQ(0, def.outputs().size());
+    EXPECT_EQ(size_t(0), def.parameters().size());
+    EXPECT_EQ(size_t(0), def.inputs().size());
+    ASSERT_EQ(size_t(0), def.outputs().size());
 
     const Graph g(".", json["nodes"]);
 

@@ -34,9 +34,9 @@ TEST(Parameters, DefaultValues) {
     EXPECT_EQ(false, p.readBool("x"));
     EXPECT_EQ(false, p.readBool("x", false));
     EXPECT_EQ(true, p.readBool("x", true));
-    EXPECT_EQ(0, p.readInt("x"));
-    EXPECT_EQ(0, p.readInt("x", 0));
-    EXPECT_EQ(-1, p.readInt("x", -1));
+    EXPECT_EQ(int32_t(0), p.readInt("x"));
+    EXPECT_EQ(int32_t(0), p.readInt("x", 0));
+    EXPECT_EQ(int32_t(-1), p.readInt("x", -1));
     EXPECT_DOUBLE_EQ(0.0, p.readDouble("x"));
     EXPECT_DOUBLE_EQ(0.0, p.readDouble("x", 0.0));
     EXPECT_DOUBLE_EQ(10.0, p.readDouble("x", 10.0));

@@ -107,6 +107,27 @@ Recording::~Recording() {
     close();
 }
 
+void Recording::write(
+        uint64_t timestamp,
+        const std::string& topic,
+        const char* message,
+        uint32_t length) {
+    // Resolve the topic to a topic list index
+    auto&& it = _topicIndexMap.find(topic);
+    if (it == _topicIndexMap.end()) {
+        throw std::runtime_error(Format("'%s' not found in the topic database", topic));
+    }
+    uint32_t topicIndex = it->second;
+
+    {
+        std::lock_guard<std::mutex> lock(_writeMutex);
+        writeULong(timestamp);
+        writeUInt(topicIndex);
+        writeUInt(length);
+        _outfile.write(message, std::streamsize(length));
+    }
+}
+
 void Recording::flush() {
     std::lock_guard<std::mutex> lock(_writeMutex);
     _outfile.flush();

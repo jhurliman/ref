@@ -5,7 +5,7 @@
 
 namespace ref {
 
-#define STRING(a) #a
+#define STR(a) #a
 
 template<typename... Args>
 void Format(std::ostream& out, const char* fmt, const Args&... args) {

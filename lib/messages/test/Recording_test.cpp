@@ -8,18 +8,18 @@
 
 namespace ref {
 
-std::string GetTempDir() {
+static std::string GetTempDir() {
     const char* tmpDir = std::getenv("TEST_TMPDIR");
     return tmpDir ? tmpDir : "/tmp";
 }
 
-uint32_t readUInt(std::ifstream& file) {
+static uint32_t readUInt(std::ifstream& file) {
     uint32_t value;
     file.read(reinterpret_cast<char*>(&value), sizeof(uint32_t));
     return value;
 }
 
-uint64_t readULong(std::ifstream& file) {
+static uint64_t readULong(std::ifstream& file) {
     uint64_t value;
     file.read(reinterpret_cast<char*>(&value), sizeof(uint64_t));
     return value;
@@ -33,7 +33,7 @@ TEST(Recording, ReadEmpty) {
     EXPECT_EQ(expectedVersion, rec.version());
     EXPECT_EQ(Time::FromNanoseconds(0), rec.startTime());
     EXPECT_EQ(Time::FromNanoseconds(0), rec.endTime());
-    EXPECT_EQ(0, rec.size());
+    EXPECT_EQ(size_t(0), rec.size());
     EXPECT_EQ(rec.begin(), rec.end());
 }
 
@@ -65,13 +65,13 @@ TEST(Recording, WriteEmpty) {
     EXPECT_EQ(RECORDING_MINOR, version);
 
     uint64_t startNS = readULong(file);
-    EXPECT_EQ(0, startNS);
+    EXPECT_EQ(uint64_t(0), startNS);
 
     uint64_t endNS = readULong(file);
-    EXPECT_EQ(0, endNS);
+    EXPECT_EQ(uint64_t(0), endNS);
 
     uint64_t messageCount = readULong(file);
-    EXPECT_EQ(0, messageCount);
+    EXPECT_EQ(uint64_t(0), messageCount);
 
     // Variable header length
     uint32_t headerLength = readUInt(file);
@@ -83,13 +83,13 @@ TEST(Recording, WriteEmpty) {
     auto header = messages::recording::UnPackHeader(headerData.data());
     ASSERT_TRUE(header.get());
     ASSERT_TRUE(header->types.get());
-    EXPECT_EQ(0, header->types->definitions.size());
+    EXPECT_EQ(size_t(0), header->types->definitions.size());
     ASSERT_TRUE(header->topics.get());
-    EXPECT_EQ(0, header->topics->definitions.size());
+    EXPECT_EQ(size_t(0), header->topics->definitions.size());
 
     // Total recording length
     file.seekg(0, file.end);
-    size_t fileLength = file.tellg();
+    std::streampos fileLength = file.tellg();
     ASSERT_EQ(36 + headerLength, fileLength);
 }
 
@@ -142,13 +142,13 @@ TEST(Recording, WriteSimple) {
     EXPECT_EQ(RECORDING_MINOR, version);
 
     uint64_t startNS = readULong(file);
-    EXPECT_EQ(0, startNS);
+    EXPECT_EQ(uint64_t(0), startNS);
 
     uint64_t endNS = readULong(file);
-    EXPECT_EQ(0, endNS);
+    EXPECT_EQ(uint64_t(0), endNS);
 
     uint64_t messageCount = readULong(file);
-    EXPECT_EQ(0, messageCount);
+    EXPECT_EQ(uint64_t(0), messageCount);
 
     // Variable header length
     uint32_t headerLength = readUInt(file);
@@ -164,14 +164,14 @@ TEST(Recording, WriteSimple) {
     EXPECT_EQ(2, header->types->definitions.size());
     EXPECT_EQ("TypeA", header->types->definitions[0]->name);
     EXPECT_EQ("", header->types->definitions[0]->hash);
-    EXPECT_EQ(0, header->types->definitions[0]->schema.size());
+    EXPECT_EQ(size_t(0), header->types->definitions[0]->schema.size());
     EXPECT_EQ("TypeB", header->types->definitions[1]->name);
     EXPECT_EQ("", header->types->definitions[1]->hash);
-    EXPECT_EQ(0, header->types->definitions[1]->schema.size());
+    EXPECT_EQ(size_t(0), header->types->definitions[1]->schema.size());
     ASSERT_TRUE(header->topics.get());
     EXPECT_EQ(2, header->topics->definitions.size());
     EXPECT_EQ("/a", header->topics->definitions[0]->topic_name);
-    EXPECT_EQ(0, header->topics->definitions[0]->type_index);
+    EXPECT_EQ(uint32_t(0), header->topics->definitions[0]->type_index);
     EXPECT_EQ("/b", header->topics->definitions[1]->topic_name);
     EXPECT_EQ(1, header->topics->definitions[1]->type_index);
 
@@ -183,7 +183,7 @@ TEST(Recording, WriteSimple) {
 
     // Topic index
     uint32_t index = readUInt(file);
-    EXPECT_EQ(0, index);
+    EXPECT_EQ(uint32_t(0), index);
 
     // Length
     uint32_t length = readUInt(file);

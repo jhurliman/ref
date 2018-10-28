@@ -13,4 +13,8 @@ const Graph& NodeBase::graph() const {
     return _graph;
 }
 
+std::mutex& NodeBase::mutex() const {
+    return _mutex;
+}
+
 }  // namespace ref

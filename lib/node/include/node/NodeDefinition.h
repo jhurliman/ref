@@ -18,11 +18,17 @@ public:
         std::string name;
         std::string hash;
         std::vector<uint8_t> schema;
+
+        TopicType();
+        TopicType(const std::string& name_, const std::string& hash_, const std::vector<uint8_t>& schema_);
     };
 
     struct Topic {
         std::string name;
         TopicType type;
+
+        Topic();
+        Topic(const std::string& name_, const TopicType& type_);
     };
 
     struct TriggerRequirements {
@@ -31,9 +37,10 @@ public:
     };
 
     using InputOutputID = std::string;
+    using TopicName = std::string;
     using TimeoutSec = double;
     using IDToTopicMap = std::unordered_map<InputOutputID, Topic>;
-    using TopicList = std::vector<std::string>;
+    using TopicList = std::vector<TopicName>;
 
     static Optional<NodeDefinition> Create(const std::string& dataDir, const Json::Value& nodeJson);
 

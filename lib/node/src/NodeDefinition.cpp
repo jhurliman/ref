@@ -12,6 +12,19 @@ namespace ref {
 constexpr const char* BINARY_SCHEMA_PATH = "lib/messages/definitions/";
 constexpr const char* BINARY_SCHEMA_EXT = ".bfbs";
 
+NodeDefinition::TopicType::TopicType() {}
+
+NodeDefinition::TopicType::TopicType(
+        const std::string& name_,
+        const std::string& hash_,
+        const std::vector<uint8_t>& schema_)
+        : name(name_), hash(hash_), schema(schema_) {}
+
+NodeDefinition::Topic::Topic() {}
+
+NodeDefinition::Topic::Topic(const std::string& name_, const TopicType& type_)
+        : name(name_), type(type_) {}
+
 Optional<NodeDefinition>
 NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) {
     std::string name = nodeJson["name"].asString();
@@ -38,18 +51,17 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     Parameters params(nodeJson["parameters"]);
 
     IDToTopicMap inputs;
-    auto& inputsJson = nodeJson["inputs"];
+    const auto& inputsJson = nodeJson["inputs"];
     if (inputsJson.isObject()) {
         for (auto&& it = inputsJson.begin(); it != inputsJson.end(); ++it) {
-            const std::string& id = it.key().asString();
             const auto& input = NodeDefinition::parseInputOutput(dataDir, *it);
             if (!input) {
-                LOG_ERROR(Format("Invalid input '%s'", id));
+                LOG_ERROR(Format("Invalid input '%s'", it.key().asString()));
                 return {};
             }
 
             const Topic topic = *input;
-            inputs[id] = topic;
+            inputs[it.key().asString()] = topic;
         }
     }
 
@@ -57,15 +69,14 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     auto& outputsJson = nodeJson["outputs"];
     if (outputsJson.isObject()) {
         for (auto&& it = outputsJson.begin(); it != outputsJson.end(); ++it) {
-            const std::string& id = it.key().asString();
             const auto& output = NodeDefinition::parseInputOutput(dataDir, *it);
             if (!output) {
-                LOG_ERROR(Format("Invalid output '%s'", id));
+                LOG_ERROR(Format("Invalid output '%s'", it.key().asString()));
                 return {};
             }
 
             const Topic topic = *output;
-            outputs[id] = topic;
+            outputs[it.key().asString()] = topic;
         }
     }
 

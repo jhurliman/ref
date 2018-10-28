@@ -14,7 +14,5 @@ cc_binary(
         "//modules/drivers/webcam:webcam_driver_lib",
         "//modules/system/recorder:recorder_lib",
     ],
-    copts = REF_COPTS + [
-        '-flto=thin',
-    ],
+    copts = REF_COPTS
 )

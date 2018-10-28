@@ -2,6 +2,9 @@
 REF_COPTS = [
     '-std=c++17',
     '-stdlib=libc++',
+
+    '-flto=thin',
+
     '-Wall',
     '-Wextra',
     '-Weverything',

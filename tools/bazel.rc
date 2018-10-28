@@ -5,6 +5,9 @@ build --action_env=PATH="/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 build --action_env=LD_LIBRARY_PATH=""
 build --experimental_strict_action_env=true
 
+# Enable all optimizations in optimized builds
+build:opt --copt=-O3
+
 # TensorFlow
 build --define=using_cuda=true --define=using_cuda_clang=true
 

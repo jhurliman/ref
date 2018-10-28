@@ -35,7 +35,9 @@ public:
     ~Recording();
 
     template<class Message, class MessageT>
-    void write(const std::string& topic, const MessageT& message);
+    void write(const std::string& topicName, const MessageT& message);
+
+    void write(uint64_t timestamp, const std::string& topic, const char* message, uint32_t length);
     void flush();
     void close();
 
@@ -77,11 +79,11 @@ protected:
 };
 
 template<class Message, class MessageT>
-void Recording::write(const std::string& topic, const MessageT& message) {
+void Recording::write(const std::string& topicName, const MessageT& message) {
     // Resolve the topic to a topic list index
-    auto&& it = _topicIndexMap.find(topic);
+    auto&& it = _topicIndexMap.find(topicName);
     if (it == _topicIndexMap.end()) {
-        throw std::runtime_error(Format("'%s' not found in the topic database", topic));
+        throw std::runtime_error(Format("'%s' not found in the topic database", topicName));
     }
     uint32_t topicIndex = it->second;
 
@@ -91,15 +93,10 @@ void Recording::write(const std::string& topic, const MessageT& message) {
     // Serialize the message
     flatbuffers::FlatBufferBuilder builder;
     builder.Finish(Message::Pack(builder, &message));
+    const char* data = reinterpret_cast<const char*>(builder.GetBufferPointer());
     uint32_t length = builder.GetSize();
 
-    {
-        std::lock_guard<std::mutex> lock(_writeMutex);
-        writeULong(t);
-        writeUInt(topicIndex);
-        writeUInt(length);
-        _outfile.write(reinterpret_cast<const char*>(builder.GetBufferPointer()), length);
-    }
+    write(t, topicName, data, length);
 }
 
 }  // namespace ref
