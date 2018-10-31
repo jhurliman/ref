@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <node/Graph.h>
 #include <node/NodeDefinition.h>
-#include <set>
+#include <unordered_set>
 
 namespace ref {
 
@@ -52,8 +52,8 @@ TEST(NodeDefinition, WildcardNode) {
     const auto& topics = def.triggeringTopics(g);
     ASSERT_EQ(2, topics.size());
 
-    std::set<std::string> expected = {"/x", "/y"};
-    std::set<std::string> actual(topics.begin(), topics.end());
+    std::unordered_set<std::string> expected = {"/x", "/y"};
+    std::unordered_set<std::string> actual(topics.begin(), topics.end());
     EXPECT_EQ(expected, actual);
 }
 
