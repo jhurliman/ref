@@ -107,7 +107,8 @@ const NodeDefinition::IDToTopicMap& NodeDefinition::outputs() const {
     return _outputs;
 }
 
-const NodeDefinition::TopicList& NodeDefinition::triggeringTopics(const Graph& graph) {
+const NodeDefinition::TopicList& NodeDefinition::triggeringTopics(const Graph& graph) const {
+    // FIXME: Initialize NodeDefinition with a Graph& and be done with this nonsense
     // Check if the result has already been cached
     // NOTE: This assumes this method is only called with a single graph!
     if (_triggeringTopics) {

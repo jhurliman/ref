@@ -37,6 +37,8 @@ public:
     };
 
     using InputOutputID = std::string;
+    using NodeName = std::string;
+    using NodeType = std::string;
     using TopicName = std::string;
     using TimeoutSec = double;
     using IDToTopicMap = std::unordered_map<InputOutputID, Topic>;
@@ -50,8 +52,7 @@ public:
     const Parameters& parameters() const;
     const IDToTopicMap& inputs() const;
     const IDToTopicMap& outputs() const;
-
-    const TopicList& triggeringTopics(const Graph& graph);
+    const TopicList& triggeringTopics(const Graph& graph) const;
 
 private:
     std::string _name;
@@ -60,7 +61,7 @@ private:
     Parameters _parameters;
     IDToTopicMap _inputs;
     IDToTopicMap _outputs;
-    std::unique_ptr<TopicList> _triggeringTopics;
+    mutable std::unique_ptr<TopicList> _triggeringTopics;
 
     static Optional<Topic> parseInputOutput(const std::string& dataDir, const Json::Value& entry);
 
