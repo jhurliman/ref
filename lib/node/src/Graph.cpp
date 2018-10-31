@@ -58,6 +58,12 @@ void Graph::initialize() {
         _topics.push_back(entry.second);
     }
 
+    // Convert typesMap to a vector
+    _types.reserve(typesMap.size());
+    for (auto&& entry : typesMap) {
+        _types.push_back(entry.second);
+    }
+
     // Second pass, connecting matching input topics to each node. This must
     // happen after _topics has been fully populated
     for (NodeDefinition& def : _nodes) {
@@ -69,10 +75,6 @@ void Graph::initialize() {
             _graph.insert_edge(topicVertex, nodeVertex);
         }
     }
-
-    // FIXME: Populate _types
-
-    // FIXME: Populate _executionSteps
 }
 
 const std::vector<NodeDefinition>& Graph::nodes() const {
