@@ -1,5 +1,4 @@
-#include "JsonParse.h"
-
+#include <core/Json.h>
 #include <gtest/gtest.h>
 #include <node/Graph.h>
 #include <node/NodeDefinition.h>
@@ -48,8 +47,10 @@ TEST(NodeDefinition, WildcardNode) {
 
     EXPECT_EQ(3, g.nodes().size());
     EXPECT_EQ(2, g.topics().size());
-    ASSERT_EQ(def.triggeringTopics(g), def.triggeringTopics(g));
-    const auto& topics = def.triggeringTopics(g);
+
+    EXPECT_EQ(size_t(0), def.triggeringTopics().size());
+    def.init(g);
+    const auto& topics = def.triggeringTopics();
     ASSERT_EQ(2, topics.size());
 
     std::unordered_set<std::string> expected = {"/x", "/y"};

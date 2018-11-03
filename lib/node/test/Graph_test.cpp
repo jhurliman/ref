@@ -1,5 +1,4 @@
-#include "JsonParse.h"
-
+#include <core/Json.h>
 #include <core/Strings.h>
 #include <gtest/gtest.h>
 #include <node/Graph.h>
@@ -22,7 +21,7 @@ TEST(Graph, OneNode) {
     EXPECT_EQ("A", nodeDef.nodeType());
     EXPECT_DOUBLE_EQ(1.0, nodeDef.triggers().timeout);
     EXPECT_EQ(size_t(0), nodeDef.triggers().topicMatches.size());
-    EXPECT_EQ(size_t(0), nodeDef.triggeringTopics(g).size());
+    EXPECT_EQ(size_t(0), nodeDef.triggeringTopics().size());
     EXPECT_EQ(size_t(0), nodeDef.inputs().size());
 
     ASSERT_EQ(1, nodeDef.outputs().size());
@@ -50,5 +49,8 @@ TEST(Graph, OneNode) {
     g.writeDot(ss);
     EXPECT_TRUE(StartsWith(ss.str(), "digraph G {"));
 }
+
+// TODO: Implement tests for more complex graphs when Graph actually does
+// something
 
 }  // namespace ref

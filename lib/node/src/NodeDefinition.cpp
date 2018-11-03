@@ -12,6 +12,8 @@ namespace ref {
 constexpr const char* BINARY_SCHEMA_PATH = "lib/messages/definitions/";
 constexpr const char* BINARY_SCHEMA_EXT = ".bfbs";
 
+// TopicType ///////////////////////////////////////////////////////////////////
+
 NodeDefinition::TopicType::TopicType() {}
 
 NodeDefinition::TopicType::TopicType(
@@ -20,10 +22,14 @@ NodeDefinition::TopicType::TopicType(
         const std::vector<uint8_t>& schema_)
         : name(name_), hash(hash_), schema(schema_) {}
 
+// Topic ///////////////////////////////////////////////////////////////////////
+
 NodeDefinition::Topic::Topic() {}
 
 NodeDefinition::Topic::Topic(const std::string& name_, const TopicType& type_)
         : name(name_), type(type_) {}
+
+// NodeDefinition //////////////////////////////////////////////////////////////
 
 Optional<NodeDefinition>
 NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) {
@@ -50,18 +56,16 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
 
     Parameters params(nodeJson["parameters"]);
 
-    IDToTopicMap inputs;
+    IDToTopicNameMap inputNames;
     const auto& inputsJson = nodeJson["inputs"];
     if (inputsJson.isObject()) {
         for (auto&& it = inputsJson.begin(); it != inputsJson.end(); ++it) {
-            const auto& input = NodeDefinition::parseInputOutput(dataDir, *it);
-            if (!input) {
+            if (!(*it).isString()) {
                 LOG_ERROR(Format("Invalid input '%s'", it.key().asString()));
                 return {};
             }
 
-            const Topic topic = *input;
-            inputs[it.key().asString()] = topic;
+            inputNames[it.key().asString()] = (*it).asString();
         }
     }
 
@@ -69,7 +73,7 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     auto& outputsJson = nodeJson["outputs"];
     if (outputsJson.isObject()) {
         for (auto&& it = outputsJson.begin(); it != outputsJson.end(); ++it) {
-            const auto& output = NodeDefinition::parseInputOutput(dataDir, *it);
+            const auto& output = NodeDefinition::parseOutput(dataDir, *it);
             if (!output) {
                 LOG_ERROR(Format("Invalid output '%s'", it.key().asString()));
                 return {};
@@ -80,7 +84,31 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
         }
     }
 
-    return NodeDefinition(name, type, reqs, params, inputs, outputs);
+    return NodeDefinition(name, type, reqs, params, inputNames, outputs);
+}
+
+void NodeDefinition::init(const Graph& graph) {
+    // Convert the map of IDs to input topic names into a map of IDs to input
+    // topics
+    for (auto&& [id, topicName] : _inputNames) {
+        auto match = graph.getTopicByName(topicName);
+        if (!match) {
+            throw std::runtime_error(Format("Topic %s is not published in the graph", topicName));
+        }
+        _inputs[id] = *match;
+    }
+
+    // Compare this node's topic trigger patterns to all published topics in the
+    // graph and construct the list of topics that will trigger this node
+    _triggeringTopics.clear();
+    for (const NodeDefinition::Topic& topic : graph.topics()) {
+        for (const std::string& trigger : _triggers.topicMatches) {
+            if (WildcardMatch(topic.name, trigger)) {
+                _triggeringTopics.push_back(topic.name);
+                break;
+            }
+        }
+    }
 }
 
 const std::string& NodeDefinition::name() const {
@@ -107,33 +135,14 @@ const NodeDefinition::IDToTopicMap& NodeDefinition::outputs() const {
     return _outputs;
 }
 
-const NodeDefinition::TopicList& NodeDefinition::triggeringTopics(const Graph& graph) const {
-    // FIXME: Initialize NodeDefinition with a Graph& and be done with this nonsense
-    // Check if the result has already been cached
-    // NOTE: This assumes this method is only called with a single graph!
-    if (_triggeringTopics) {
-        return *_triggeringTopics;
-    }
-
-    std::unique_ptr<TopicList> topics = std::make_unique<TopicList>();
-
-    for (const NodeDefinition::Topic& topic : graph.topics()) {
-        for (const std::string& trigger : _triggers.topicMatches) {
-            if (WildcardMatch(topic.name, trigger)) {
-                (*topics).push_back(topic.name);
-                break;
-            }
-        }
-    }
-
-    _triggeringTopics = std::move(topics);
-    return *_triggeringTopics;
+const NodeDefinition::TopicList& NodeDefinition::triggeringTopics() const {
+    return _triggeringTopics;
 }
 
 Optional<NodeDefinition::Topic>
-NodeDefinition::parseInputOutput(const std::string& dataDir, const Json::Value& entry) {
+NodeDefinition::parseOutput(const std::string& dataDir, const Json::Value& entry) {
     if (!entry.isObject()) {
-        LOG_ERROR("Input/output entry is not an object");
+        LOG_ERROR("Output entry is not an object");
         return {};
     }
 
@@ -175,13 +184,13 @@ NodeDefinition::NodeDefinition(
         const std::string& nodeType,
         const TriggerRequirements& triggers,
         const Parameters& parameters,
-        const IDToTopicMap& inputs,
+        const IDToTopicNameMap& inputNames,
         const IDToTopicMap& outputs)
         : _name(name)
         , _nodeType(nodeType)
         , _triggers(triggers)
         , _parameters(parameters)
-        , _inputs(inputs)
+        , _inputNames(inputNames)
         , _outputs(outputs) {}
 
 }  // namespace ref

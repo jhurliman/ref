@@ -42,9 +42,12 @@ public:
     using TopicName = std::string;
     using TimeoutSec = double;
     using IDToTopicMap = std::unordered_map<InputOutputID, Topic>;
+    using IDToTopicNameMap = std::unordered_map<InputOutputID, TopicName>;
     using TopicList = std::vector<TopicName>;
 
     static Optional<NodeDefinition> Create(const std::string& dataDir, const Json::Value& nodeJson);
+
+    void init(const Graph& graph);
 
     const std::string& name() const;
     const std::string& nodeType() const;
@@ -52,25 +55,26 @@ public:
     const Parameters& parameters() const;
     const IDToTopicMap& inputs() const;
     const IDToTopicMap& outputs() const;
-    const TopicList& triggeringTopics(const Graph& graph) const;
+    const TopicList& triggeringTopics() const;
 
 private:
     std::string _name;
     std::string _nodeType;
     TriggerRequirements _triggers;
     Parameters _parameters;
+    IDToTopicNameMap _inputNames;
     IDToTopicMap _inputs;
     IDToTopicMap _outputs;
-    mutable std::unique_ptr<TopicList> _triggeringTopics;
+    TopicList _triggeringTopics;
 
-    static Optional<Topic> parseInputOutput(const std::string& dataDir, const Json::Value& entry);
+    static Optional<Topic> parseOutput(const std::string& dataDir, const Json::Value& entry);
 
     NodeDefinition(
             const std::string& name,
             const std::string& nodeType,
             const TriggerRequirements& triggers,
             const Parameters& parameters,
-            const IDToTopicMap& inputs,
+            const IDToTopicNameMap& inputNames,
             const IDToTopicMap& outputs);
 };
 

@@ -64,13 +64,15 @@ void Graph::initialize() {
         _types.push_back(entry.second);
     }
 
-    // Second pass, connecting matching input topics to each node. This must
-    // happen after _topics has been fully populated
+    // Second pass, initializing each NodeDefinition and connecting published
+    // topics to nodes via their declared triggering topics. This must happen
+    // after _topics has been fully populated
     for (NodeDefinition& def : _nodes) {
-        const std::string nodeVertex = "node:" + def.name();
+        def.init(*this);
 
         // Trigger topics -> this node
-        for (auto&& topicName : def.triggeringTopics(*this)) {
+        const std::string nodeVertex = "node:" + def.name();
+        for (auto&& topicName : def.triggeringTopics()) {
             std::string topicVertex = "topic:" + topicName;
             _graph.insert_edge(topicVertex, nodeVertex);
         }
@@ -87,6 +89,15 @@ const std::vector<NodeDefinition::Topic>& Graph::topics() const {
 
 const std::vector<NodeDefinition::TopicType>& Graph::types() const {
     return _types;
+}
+
+Optional<const NodeDefinition::Topic&> Graph::getTopicByName(const std::string& topicName) const {
+    for (auto&& topic : _topics) {
+        if (topic.name == topicName) {
+            return topic;
+        }
+    }
+    return {};
 }
 
 void Graph::writeDot(std::ostream& stream) const {

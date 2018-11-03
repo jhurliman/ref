@@ -17,10 +17,7 @@
       "type": "B",
       "trigger": { "topics": [], "timeout": 0.1 },
       "inputs": {
-        "y": {
-          "topic": "/x",
-          "type": "basic/BoolValue"
-        }
+        "y": "/x"
       },
       "outputs": {}
     }

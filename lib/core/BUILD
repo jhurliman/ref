@@ -5,7 +5,10 @@ cc_library(
     srcs = glob(["src/**/*.cpp"]),
     hdrs = glob(["include/**/*.h"]),
     includes = ["include"],
-    deps = ["//third_party:third_party_lib"],
+    deps = [
+        "@jsoncpp",
+        "//third_party:third_party_lib",
+    ],
     copts = REF_COPTS,
 )
 
