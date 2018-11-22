@@ -1,0 +1,11 @@
+include "../Header.fbs";
+
+namespace ref.messages.tracking;
+
+table Objects {
+    header:Header;
+
+    // TODO
+}
+
+root_type Objects;

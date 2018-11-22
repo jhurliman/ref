@@ -1,0 +1,11 @@
+include "../Header.fbs";
+
+namespace ref.messages.geometry;
+
+table TransformStamped {
+    header:Header;
+
+    // TODO
+}
+
+root_type TransformStamped;

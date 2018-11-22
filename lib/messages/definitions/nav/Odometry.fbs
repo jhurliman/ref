@@ -1,0 +1,11 @@
+include "../Header.fbs";
+
+namespace ref.messages.nav;
+
+table Odometry {
+    header:Header;
+
+    // TODO
+}
+
+root_type Odometry;
