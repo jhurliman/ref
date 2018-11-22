@@ -101,7 +101,7 @@ Optional<const NodeDefinition::Topic&> Graph::getTopicByName(const std::string& 
 }
 
 void Graph::writeDot(std::ostream& stream) const {
-    constexpr std::string_view prologue = "digraph G {\n  rankdir=\"LR\";\n";
+    constexpr std::string_view prologue = "digraph G {\n  rankdir=\"LR\";\n\n";
     constexpr std::string_view epilogue = "}\n";
 
     stream.write(prologue.data(), prologue.size());
@@ -113,7 +113,7 @@ void Graph::writeDot(std::ostream& stream) const {
         std::string shortName = vertex.substr(vertex.find(':') + 1);
 
         if (vertex.find("node:") != std::string::npos) {
-            line = "  \"" + vertex + "\" [shape=box];\n";
+            line = "  \"" + vertex + "\" [shape=doublecircle color=dodgerblue4];\n";
         } else {
             line = "  \"" + vertex + "\";\n";
         }
