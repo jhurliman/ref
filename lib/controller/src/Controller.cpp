@@ -1,19 +1,43 @@
 #include "controller/Controller.h"
 
+#include <core/Format.h>
+#include <unordered_set>
+
 namespace ref {
 
-Controller::Controller(const Graph& g) : _g(g) {}
+Controller::Controller(const Graph& g, Controller::NodeFactoryFn nodeCreator)
+        : _g(g), _nodeCreator(nodeCreator) {
+    // Instantiate all of the nodes defined in the graph
+    for (auto&& nodeDef : _g.nodes()) {
+        _nodes[nodeDef.name()] = _nodeCreator(nodeDef);
+    }
 
-void Controller::executeTicks(std::vector<NodeBase&>& nodes) {
-    // for (auto&& node : nodes) {
-    //     auto& outputs = node.definition().outputs();
-    //     // FIXME: Graph needs to answer: give me a list of nodes given a list of input topics
-    //     std::vector<NodeBase&> outputNodes;
+    // Create a mapping from topic name to nodes triggered by publishing that topic
+    for (auto&& entry : _nodes) {
+        NodeBase* nodePtr = entry.second.get();
+        for (auto&& topicName : nodePtr->definition().triggeringTopics()) {
+            _topicsToNodes[topicName].push_back(nodePtr);
+        }
+    }
+}
 
-    //     for (auto&& outputNode : outputNodes) {
-    //         outputNode.
-    //     }
-    // }
+void Controller::readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready) {
+    for(auto&& [name, node] : _nodes) {
+        if (node->readyToTick(currentTime)) {
+            ready->push_back(node.get());
+        }
+    }
+}
+
+void Controller::publishMessages(const Time::TimePoint currentTime, NodeOutputs& messages) {
+    for (auto&& [topic, message] : messages.allMessages()) {
+        auto it = _topicsToNodes.find(topic);
+        if (it != _topicsToNodes.end()) {
+            for (NodeBase* node : it->second) {
+                node->publishMessage(currentTime, message);
+            }
+        }
+    }
 }
 
 }  // namespace ref

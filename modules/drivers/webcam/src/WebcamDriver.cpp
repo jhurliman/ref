@@ -11,10 +11,11 @@ static void callbackWrapper(uvc_frame_t* frame, void* ptr) {
     static_cast<WebcamDriver*>(ptr)->callback(frame);
 }
 
-WebcamDriver::WebcamDriver(const NodeDefinition& def, const Graph& graph) : NodeBase(def, graph) {
-    int32_t vendor_id = def.parameters().readInt(STRING(vendor_id));
-    int32_t product_id = def.parameters().readInt(STRING(product_id));
-    std::string serial_number = def.parameters().readString(STRING(serial_number));
+WebcamDriver::WebcamDriver(const NodeDefinition& def, const Graph& graph)
+        : NodeBase(def, graph), _input(def.inputs()), _output(def.outputs()) {
+    int32_t vendor_id = def.parameters().readInt(STR(vendor_id));
+    int32_t product_id = def.parameters().readInt(STR(product_id));
+    std::string serial_number = def.parameters().readString(STR(serial_number));
 
     LOG_DEBUG(
             "WebcamDriver(vendor_id=%d, product_id=%d, serial_number=\"%s\")",
@@ -61,15 +62,24 @@ WebcamDriver::WebcamDriver(const NodeDefinition& def, const Graph& graph) : Node
     uvc_set_ae_mode(deviceHandle, 1);
 }
 
-void WebcamDriver::tick(const NodeMessages& input, WebcamDriverOutput* output) {
-    LOG_DEBUG("WebcamDriver::tick(%s)", Time::ToNanoseconds(input.currentTime));
+NodeInputs* WebcamDriver::inputs() {
+    return &_input;
+}
+
+NodeOutputs* WebcamDriver::outputs() {
+    return &_output;
+}
+
+void WebcamDriver::tick() {
+    LOG_DEBUG("WebcamDriver::tick(%s)", Time::ToNanoseconds(_input.currentTime()));
 
     std::lock_guard<std::mutex> lock(latestImageMutex);
     if (!latestImage) {
         return;
     }
 
-    output->image_compressed = latestImage;
+    // Move latestImage -> _output
+    _output.image_compressed.message = std::move(latestImage);
     latestImage = nullptr;
 }
 
@@ -92,7 +102,7 @@ void WebcamDriver::callback(uvc_frame_t* frame) {
 
         // TODO: Create a memory pool of these to prevent repeated large
         // allocations when copying srcData to latestImage->data
-        latestImage = std::make_shared<messages::sensors::ImageT>();
+        latestImage = std::make_unique<messages::sensors::ImageT>();
         if (!latestImage->header) {
             latestImage->header = std::make_unique<messages::HeaderT>();
         }

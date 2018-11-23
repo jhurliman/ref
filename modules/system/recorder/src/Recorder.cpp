@@ -4,7 +4,8 @@
 
 namespace ref {
 
-Recorder::Recorder(const NodeDefinition& def, const Graph& graph) : NodeBase(def, graph) {
+Recorder::Recorder(const NodeDefinition& def, const Graph& graph)
+        : NodeBase(def, graph), _input(def.inputs()), _output(def.outputs()) {
     std::string folder = def.parameters().readString(STR(folder), "/tmp");
     std::string file_pattern = def.parameters().readString(STR(file_pattern), "recording_%s.rec");
     // int32_t max_bytes = def.parameters().readInt(STR(max_bytes));
@@ -33,9 +34,17 @@ Recorder::Recorder(const NodeDefinition& def, const Graph& graph) : NodeBase(def
     _curRecording = std::make_unique<Recording>(filename, std::move(types), std::move(topics));
 }
 
-void Recorder::tick(const NodeInputs& input, NodeOutputs* output) {
+NodeInputs* Recorder::inputs() {
+    return &_input;
+}
+
+NodeOutputs* Recorder::outputs() {
+    return &_output;
+}
+
+void Recorder::tick() {
     // FIXME:
-    // input.record(*_curRecording);
+    // _input.record(*_curRecording);
 }
 
 }  // namespace ref

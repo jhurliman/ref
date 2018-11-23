@@ -1,23 +1,31 @@
 #pragma once
 
+#include <core/Time.h>
+#include <functional>
+#include <memory>
 #include <node/Graph.h>
 #include <node/NodeBase.h>
+#include <node/NodeOutputs.h>
+#include <unordered_map>
 #include <vector>
 
 namespace ref {
 
 class Controller {
 public:
-    Controller(const Graph& g);
+    using NodeFactoryFn = std::function<std::unique_ptr<NodeBase>(const NodeDefinition& nodeDef)>;
 
-    std::vector<NodeBase&> readyNodes();
+    Controller(const Graph& g, NodeFactoryFn nodeCreator);
 
-    // FIXME: Need the list of nodes to execute, then for each node retrieve the
-    // nodes it publishes to and wire outputs to inputs after execution
-    void executeTicks(std::vector<NodeBase&>& nodes);
+    Time::HiResTimePoint nextDeadline();
+    void readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready);
+    void publishMessages(const Time::TimePoint currentTime, NodeOutputs& messages);
 
 private:
     const Graph& _g;
+    const NodeFactoryFn _nodeCreator;
+    std::unordered_map<NodeDefinition::NodeName, std::unique_ptr<NodeBase>> _nodes;
+    std::unordered_map<NodeDefinition::TopicName, std::vector<NodeBase*>> _topicsToNodes;
 };
 
 }  // namespace ref

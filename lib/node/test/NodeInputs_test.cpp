@@ -13,8 +13,7 @@ public:
     std::unique_ptr<BoolValueT> a;
     std::unique_ptr<BoolValueT> b;
 
-    TestInput(Time::TimePoint currentTime, NodeDefinition::IDToTopicMap& idToTopicMap)
-            : NodeInputs(currentTime, idToTopicMap) {}
+    TestInput(const NodeDefinition::IDToTopicMap& idToTopicMap) : NodeInputs(idToTopicMap) {}
 
     virtual void deserialize();
 };
@@ -28,7 +27,8 @@ void TestInput::deserialize() {
 
 TEST(NodeInputs, Empty) {
     NodeDefinition::IDToTopicMap idToTopicMap;
-    TestInput input(Time::FromNanoseconds(1), idToTopicMap);
+    TestInput input(idToTopicMap);
+    input.setCurrentTime(Time::FromNanoseconds(1));
 
     EXPECT_EQ(Time::FromNanoseconds(1), input.currentTime());
     EXPECT_EQ(size_t(0), input.allMessages().size());
@@ -41,7 +41,7 @@ TEST(NodeInputs, SomeMissing) {
     NodeDefinition::Topic topicA{"/a", typeA};
 
     NodeDefinition::IDToTopicMap idToTopicMap{{"a", topicA}};
-    TestInput input(Time::FromNanoseconds(1), idToTopicMap);
+    TestInput input(idToTopicMap);
 
     EXPECT_EQ(1, input.allMessages().size());
     EXPECT_EQ(nullptr, input.b.get());
@@ -61,7 +61,7 @@ TEST(NodeOutputs, CopyFromOutputsAndReset) {
     NodeDefinition::Topic topicA{"/a", typeA};
 
     NodeDefinition::IDToTopicMap idToTopicMap{{"a", topicA}};
-    TestInput input(Time::FromNanoseconds(1), idToTopicMap);
+    TestInput input(idToTopicMap);
 
     PublishedMessage<BoolValueT> outputA(topicA);
     outputA.message = std::make_unique<BoolValueT>();

@@ -87,6 +87,15 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     return NodeDefinition(name, type, reqs, params, inputNames, outputs);
 }
 
+NodeDefinition::Topic
+NodeDefinition::LookupTopic(const NodeDefinition::IDToTopicMap& map, const char* id) {
+    auto it = map.find(id);
+    if (it != map.end()) {
+        return it->second;
+    }
+    return {};
+}
+
 void NodeDefinition::init(const Graph& graph) {
     // Convert the map of IDs to input topic names into a map of IDs to input
     // topics

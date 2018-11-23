@@ -14,10 +14,14 @@ class Recorder : public NodeBase {
 public:
     Recorder(const NodeDefinition& def, const Graph& graph);
 
-    void tick(const NodeInputs& input, NodeOutputs* output);
+    NodeInputs* inputs() override;
+    NodeOutputs* outputs() override;
+    void tick() override;
 
 private:
     std::unique_ptr<Recording> _curRecording;
+    NodeInputs _input;
+    NodeOutputs _output;
 };
 
 }  // namespace ref

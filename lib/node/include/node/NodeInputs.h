@@ -12,11 +12,13 @@ namespace ref {
 
 class NodeInputs {
 public:
-    NodeInputs(Time::TimePoint currentTime, NodeDefinition::IDToTopicMap& idToTopicMap);
+    NodeInputs(const NodeDefinition::IDToTopicMap& idToTopicMap);
     virtual ~NodeInputs();
 
     const Time::TimePoint currentTime() const;
     const ReceivedMessageMap& allMessages() const;
+
+    void setCurrentTime(const Time::TimePoint now);
 
     void copyFromOutputs(const PublishedMessageMap& outputs);
     virtual void deserialize();
@@ -28,7 +30,7 @@ public:
 
 protected:
     Time::TimePoint _currentTime;
-    NodeDefinition::IDToTopicMap& _idToTopicMap;
+    const NodeDefinition::IDToTopicMap& _idToTopicMap;
     ReceivedMessageMap _received;
 };
 

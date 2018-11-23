@@ -17,4 +17,15 @@ std::mutex& NodeBase::mutex() const {
     return _mutex;
 }
 
+bool NodeBase::readyToTick(const Time::TimePoint currentTime) const {
+    // FIXME: Check if we are actually ready to tick!
+    return true;
+}
+
+void NodeBase::publishMessage(
+        const Time::TimePoint currentTime,
+        const PublishedMessageBase* message) {
+    // FIXME: Do something with message!
+}
+
 }  // namespace ref

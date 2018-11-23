@@ -23,8 +23,9 @@ TimePoint NowWall();
 
 HiResTimePoint NowHiRes();
 
+timespec ToTimespec(uint64_t ns);
+
 timespec NowMonotonicTimespec(int64_t nsecOffset);
-timespec NowMonotonicTimespec(uint64_t nsecOffset);
 
 TimePoint Now();
 
@@ -64,27 +65,40 @@ inline void timespec_monodiff_rml(struct timespec* ts_out, const struct timespec
             ts_out->tv_sec = ts_out->tv_sec - 1;
             ts_out->tv_nsec = ts_out->tv_nsec + TIMING_GIGA;
         }
-    } else {
     }
 }
 
-inline int NanosleepAbstime(const struct timespec* req) {
-    struct timespec ts_delta;
-    int retval = clock_gettime(CLOCK_MONOTONIC, &ts_delta);
+inline int Nanosleep(uint64_t ns) {
+    timespec ts = ToTimespec(ns);
+    return nanosleep(&ts, nullptr);
+}
+
+inline int NanosleepAbstime(const struct timespec* ts) {
+    timespec tsDelta;
+    int retval = clock_gettime(CLOCK_MONOTONIC, &tsDelta);
     if (retval == 0) {
-        timespec_monodiff_rml(&ts_delta, req);
-        retval = nanosleep(&ts_delta, NULL);
+        timespec_monodiff_rml(&tsDelta, ts);
+        retval = nanosleep(&tsDelta, NULL);
     }
     return retval;
 }
 
 #else
 
+inline int Nanosleep(uint64_t ns) {
+    timespec ts = ToTimespec(ns);
+    return clock_nanosleep(CLOCK_MONOTONIC, 0, ts, nullptr);
+}
+
 inline int NanosleepAbstime(const struct timespec* req) {
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, req, nullptr);
+    return clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, req, nullptr);
 }
 
 #endif
+
+inline int Nanosleep(std::chrono::nanoseconds ns) {
+    return Nanosleep(ns.count());
+}
 
 }  // namespace Time
 

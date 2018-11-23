@@ -1,0 +1,242 @@
+{
+  "nodes": [
+    // Sensor inputs
+
+    {
+      "name": "camera_front",
+      "type": "CameraDriver",
+      "trigger": { "topics": [], "timeout": 0.1 },
+      "outputs": {
+        "image_compressed": {
+          "topic": "/camera_front/color/image_compressed",
+          "type": "sensors/Image"
+        },
+        "camera_info": {
+          "topic": "/camera_front/color/camera_info",
+          "type": "sensors/CameraInfo"
+        }
+      }
+    },
+    {
+      "name": "camera_rear",
+      "type": "CameraDriver",
+      "trigger": { "topics": [], "timeout": 0.1 },
+      "outputs": {
+        "image_compressed": {
+          "topic": "/camera_rear/color/image_compressed",
+          "type": "sensors/Image"
+        },
+        "camera_info": {
+          "topic": "/camera_rear/color/camera_info",
+          "type": "sensors/CameraInfo"
+        }
+      }
+    },
+
+    {
+      "name": "gps",
+      "type": "NavSatDriver",
+      "trigger": { "topics": [], "timeout": 0.5 },
+      "outputs": {
+        "gps_fix": {
+          "topic": "/gps/position",
+          "type": "gps/GPSFix"
+        }
+      }
+    },
+
+    // Image processing
+
+    {
+      "name": "image_decoding",
+      "type": "ImageDecoding",
+      "trigger": {
+        "topics": [
+          "/camera_front/color/image_compressed",
+          "/camera_rear/color/image_compressed"
+        ],
+        "timeout": 0.0
+      },
+      "inputs": {
+        "front_image_compressed": "/camera_front/color/image_compressed",
+        "rear_image_compressed": "/camera_rear/color/image_compressed"
+      },
+      "outputs": {
+        "front_image_raw": {
+          "topic": "/camera_front/color/image_raw",
+          "type": "sensors/Image"
+        },
+        "rear_image_raw": {
+          "topic": "/camera_rear/color/image_raw",
+          "type": "sensors/Image"
+        }
+      }
+    },
+
+    {
+      "name": "image_rect",
+      "type": "Rectification",
+      "trigger": {
+        "topics": [
+          "/camera_front/color/image_raw",
+          "/camera_front/color/camera_info",
+          "/camera_rear/color/image_raw",
+          "/camera_rear/color/camera_info"
+        ],
+        "timeout": 0.0
+      },
+      "inputs": {
+        "front_image_raw": "/camera_front/color/image_raw",
+        "front_camera_info": "/camera_front/color/camera_info",
+        "rear_image_raw": "/camera_rear/color/image_raw",
+        "rear_camera_info": "/camera_rear/color/camera_info"
+      },
+      "outputs": {
+        "front_image_rectified": {
+          "topic": "/camera_front/color/image_rect",
+          "type": "sensors/Image"
+        },
+        "rear_image_rectified": {
+          "topic": "/camera_rear/color/image_rect",
+          "type": "sensors/Image"
+        }
+      }
+    },
+
+    // Odometry
+
+    {
+      "name": "odometry",
+      "type": "Odometry",
+      "trigger": {
+        "topics": ["/camera_front/color/image_rect", "/gps/position"],
+        "timeout": 0.0
+      },
+      "inputs": {
+        "front_image_rect": "/camera_front/color/image_rect",
+        "gps_position": "/gps/position"
+      },
+      "outputs": {
+        "tf_odom": {
+          "topic": "/tf/odom",
+          "type": "geometry/TransformStamped"
+        },
+        "odom": {
+          "topic": "/odom",
+          "type": "nav/Odometry"
+        }
+      }
+    },
+
+    // Tracking
+
+    {
+      "name": "tracking",
+      "type": "Tracking",
+      "trigger": {
+        "topics": ["/camera_front/color/image_rect", "/odom", "/tf/odom"],
+        "timeout": 0.15
+      },
+      "inputs": {
+        "front_image_rect": "/camera_front/color/image_rect",
+        "odom": "/odom",
+        "tf_odom": "/tf/odom"
+      },
+      "outputs": {
+        "objects": {
+          "topic": "/objects",
+          "type": "tracking/Objects"
+        }
+      }
+    },
+
+    // Route planning
+
+    {
+      "name": "route_planning",
+      "type": "RoutePlanning",
+      "trigger": {
+        "topics": ["/objects", "/odom", "/tf/odom"],
+        "timeout": 0.15
+      },
+      "inputs": {
+        "objects": "/objects",
+        "odom": "/odom",
+        "tf_odom": "/tf/odom"
+      },
+      "outputs": {
+        "plan_global": {
+          "topic": "/plan/global",
+          "type": "nav/Path"
+        }
+      }
+    },
+
+    // Maneuver planning
+
+    {
+      "name": "maneuver_planning",
+      "type": "ManeuverPlanning",
+      "trigger": {
+        "topics": ["/objects", "/odom", "/plan/global", "/tf/odom"],
+        "timeout": 0.05
+      },
+      "inputs": {
+        "objects": "/objects",
+        "odom": "/odom",
+        "plan_global": "/plan/global",
+        "tf_odom": "/tf/odom"
+      },
+      "outputs": {
+        "plan_local": {
+          "topic": "/plan/local",
+          "type": "nav/Path"
+        }
+      }
+    },
+
+    // Controls
+
+    {
+      "name": "controls",
+      "type": "Controls",
+      "trigger": {
+        "topics": ["/odom", "/plan/local", "/tf/odom"],
+        "timeout": 0.01
+      },
+      "inputs": {
+        "odom": "/odom",
+        "plan_local": "/plan/local",
+        "tf_odom": "/tf/odom"
+      }
+    },
+
+    // Recording
+
+    {
+      "name": "recorder",
+      "type": "Recorder",
+      "trigger": {
+        "topics": ["*"],
+        "timeout": 0.0
+      }
+    },
+
+    // System monitoring
+
+    {
+      "name": "system_health",
+      "type": "SystemHealth",
+      "trigger": {
+        "topics": [],
+        "timeout": 0.1
+      },
+      "outputs": {
+        "metrics": {
+          "topic": "/metrics",
+          "type": "basic/KeyValueNumber"
+        }
+      }
+    }
+  ]
+}

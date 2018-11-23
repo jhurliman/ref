@@ -15,14 +15,15 @@ namespace ref {
 
 using namespace messages::sensors;
 
-class WebcamDriverOutput : public NodeOutputs {
+class WebcamDriverOutputs : public NodeOutputs {
+public:
     PublishedMessage<ImageT> image_compressed;
     PublishedMessage<CameraInfoT> camera_info;
 
-    WebcamDriverOutput(NodeDefinition::IDToTopicMap& idToTopicMap)
+    WebcamDriverOutputs(const NodeDefinition::IDToTopicMap& idToTopicMap)
             : NodeOutputs(idToTopicMap)
-            , image_compressed(idToTopicMap[STR(image_compressed)])
-            , camera_info(idToTopicMap[STR(camera_info)]) {}
+            , image_compressed(NodeDefinition::LookupTopic(idToTopicMap, STR(image_compressed)))
+            , camera_info(NodeDefinition::LookupTopic(idToTopicMap, STR(camera_info))) {}
 
     virtual void serialize() {
         serializeMessage<Image, ImageT>(image_compressed);
@@ -61,7 +62,10 @@ class WebcamDriver : public NodeBase {
 public:
     WebcamDriver(const NodeDefinition& def, const Graph& graph);
 
-    void tick(const NodeInputs& input, WebcamDriverOutput* output);
+    NodeInputs* inputs() override;
+    NodeOutputs* outputs() override;
+    void tick() override;
+
     void callback(uvc_frame_t* frame);
 
 private:
@@ -74,8 +78,11 @@ private:
     uvc_device_handle_t* deviceHandle = nullptr;
     uvc_stream_ctrl_t control;
 
-    std::shared_ptr<messages::sensors::ImageT> latestImage;
+    std::unique_ptr<messages::sensors::ImageT> latestImage;
     std::mutex latestImageMutex;
+
+    NodeInputs _input;
+    WebcamDriverOutputs _output;
 };
 
 }  // namespace ref

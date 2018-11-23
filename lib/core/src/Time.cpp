@@ -37,11 +37,25 @@ HiResTimePoint NowHiRes() {
     return std::chrono::high_resolution_clock::now();
 }
 
-timespec NowMonotonicTimespec(int64_t nsecOffset) {
-    return NowMonotonicTimespec(uint64_t(nsecOffset));
+timespec ToTimespec(uint64_t ns) {
+    constexpr uint64_t NSEC_PER_SEC = 1000000000;
+
+    timespec t;
+
+    // Roll nanoseconds over into seconds
+    if (ns >= NSEC_PER_SEC) {
+        uint64_t seconds = ns / NSEC_PER_SEC;
+        ns -= seconds * NSEC_PER_SEC;
+        t.tv_sec = long(seconds);
+    } else {
+        t.tv_sec = 0;
+    }
+
+    t.tv_nsec = long(ns);
+    return t;
 }
 
-timespec NowMonotonicTimespec(uint64_t nsecOffset) {
+timespec NowMonotonicTimespec(int64_t nsecOffset) {
     constexpr long NSEC_PER_SEC = 1000000000;
 
     timespec t;

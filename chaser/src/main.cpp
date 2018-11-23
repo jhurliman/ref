@@ -28,26 +28,24 @@ static void loop() {
     ref::WebcamDriver webcam{g.nodes()[0], g};
     ref::Recorder recorder{g.nodes()[1], g};
 
-    ref::Time::HiResTimePoint start = ref::Time::NowHiRes();
-    ref::Time::HiResTimePoint lastTick = start;
+    // FIXME: Replace all of this with a Controller
+    auto start = ref::Time::NowHiRes();
+    auto lastTick = start;
     do {
-        auto nowHiRes = ref::Time::NowHiRes();
-        auto now = ref::Time::Now();
-        auto elapsed = nowHiRes - lastTick;
+        auto now = ref::Time::NowHiRes();
+        auto elapsed = now - lastTick;
         if (elapsed >= 10ms) {
-            lastTick = nowHiRes;
+            lastTick = now;
             elapsed = elapsed % 10ms;
 
-            ref::NodeMessages nullIn{now, {}};
-            ref::WebcamDriverOutput camOutput{now, webcam.definition().outputs()};
-            webcam.tick(nullIn, &camOutput);
+            webcam.inputs()->setCurrentTime(ref::Time::Now());
+            webcam.tick();
 
-            ref::NodeMessages nullOut{now, recorder.definition().outputs()};
-            recorder.tick(camOutput, &nullOut);
+            recorder.inputs()->setCurrentTime(ref::Time::Now());
+            recorder.tick();
+        } else {
+            ref::Time::Nanosleep(10ms - elapsed);
         }
-
-        auto deadline = ref::Time::NowMonotonicTimespec((10ms - elapsed).count());
-        ref::Time::NanosleepAbstime(&deadline);
     } while (lastTick - start < 3s);
 }
 

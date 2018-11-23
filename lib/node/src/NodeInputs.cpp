@@ -4,8 +4,8 @@
 
 namespace ref {
 
-NodeInputs::NodeInputs(Time::TimePoint currentTime, NodeDefinition::IDToTopicMap& idToTopicMap)
-        : _currentTime(currentTime), _idToTopicMap(idToTopicMap) {
+NodeInputs::NodeInputs(const NodeDefinition::IDToTopicMap& idToTopicMap)
+        : _currentTime(Time::FromNanoseconds(0)), _idToTopicMap(idToTopicMap) {
     for (auto&& entry : idToTopicMap) {
         const std::string& topicName = entry.second.name;
         _received.try_emplace(topicName, entry.second);
@@ -20,6 +20,10 @@ const Time::TimePoint NodeInputs::currentTime() const {
 
 const ReceivedMessageMap& NodeInputs::allMessages() const {
     return _received;
+}
+
+void NodeInputs::setCurrentTime(const Time::TimePoint now) {
+    _currentTime = now;
 }
 
 void NodeInputs::copyFromOutputs(const PublishedMessageMap& outputs) {

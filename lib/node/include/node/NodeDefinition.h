@@ -47,6 +47,8 @@ public:
 
     static Optional<NodeDefinition> Create(const std::string& dataDir, const Json::Value& nodeJson);
 
+    static Topic LookupTopic(const IDToTopicMap& map, const char* id);
+
     void init(const Graph& graph);
 
     const std::string& name() const;

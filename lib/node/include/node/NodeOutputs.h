@@ -7,13 +7,14 @@ namespace ref {
 
 class NodeOutputs {
 public:
-    NodeOutputs(NodeDefinition::IDToTopicMap& idToTopicMap);
+    NodeOutputs(const NodeDefinition::IDToTopicMap& idToTopicMap);
     virtual ~NodeOutputs();
-    PublishedMessageMap& allMessages();
+    const PublishedMessageMap& allMessages() const;
+    void clear();
     virtual void serialize();
 
 protected:
-    NodeDefinition::IDToTopicMap& _idToTopicMap;
+    const NodeDefinition::IDToTopicMap& _idToTopicMap;
     PublishedMessageMap _published;
 
     template<class Message, class MessageT>

@@ -17,3 +17,14 @@ cc_library(
     ],
     copts = REF_COPTS,
 )
+
+cc_test(
+    name = "controller_test",
+    srcs = glob(["test/**/*.cpp"]),
+    data = glob(["test/data/**/*"]),
+    deps = [
+        "@googletest//:gtest_main",
+        ":controller_lib",
+    ],
+    copts = REF_COPTS,
+)
