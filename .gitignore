@@ -34,5 +34,5 @@
 .DS_Store
 
 .vscode
-bazel-out/
+bazel-out
 deploy/
