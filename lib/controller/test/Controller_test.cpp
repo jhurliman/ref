@@ -10,8 +10,13 @@ namespace ref {
 
 class TestNode : public NodeBase {
 public:
-    TestNode(const NodeDefinition& def, const Graph& graph)
-            : NodeBase(def, graph), _inputs(def.inputs()), _outputs(def.outputs()) {}
+    using TickCallback = std::function<void(TestNode& node)>;
+
+    TestNode(const NodeDefinition& def, const Graph& graph, TickCallback tickCallback)
+            : NodeBase(def, graph)
+            , _inputs(def.inputs())
+            , _outputs(def.outputs())
+            , _tickCallback(tickCallback) {}
 
     NodeInputs* inputs() override {
         return &_inputs;
@@ -26,9 +31,12 @@ public:
 protected:
     NodeInputs _inputs;
     NodeOutputs _outputs;
+    TickCallback _tickCallback;
 };
 
-void TestNode::tick() {}
+void TestNode::tick() {
+    _tickCallback(*this);
+}
 
 uint64_t constexpr Mix(char m, uint64_t s) {
     return ((s << 7) + ~(s >> 3)) + ~uint64_t(m);
@@ -49,7 +57,12 @@ TEST(Controller, BasicRobot) {
     std::cout << ss.str() << std::endl;
 #endif
 
-    auto nodeCreator = [g](const NodeDefinition& def) -> std::unique_ptr<NodeBase> {
+    auto tickCallback = [](TestNode& node) {
+        std::cout << node.definition().name() << " ticked at time "
+                  << Time::ToString(node.inputs()->currentTime()) << std::endl;
+    };
+
+    auto nodeCreator = [&](const NodeDefinition& def) -> std::unique_ptr<NodeBase> {
         switch (Hash(def.nodeType().c_str())) {
         case Hash("CameraDriver"):
         case Hash("NavSatDriver"):
@@ -62,35 +75,23 @@ TEST(Controller, BasicRobot) {
         case Hash("Controls"):
         case Hash("Recorder"):
         case Hash("SystemHealth"):
-            return std::make_unique<TestNode>(def, g);
+            return std::make_unique<TestNode>(def, g, tickCallback);
         default:
             throw std::runtime_error(Format("Unknown node type %s", def.nodeType()));
         }
     };
 
     Controller controller(g, nodeCreator);
-
-    constexpr size_t TOTAL_TICKS = 5;
-    size_t ticks = 0;
     std::vector<NodeBase*> ready;
 
-    do {
-        auto currentTime = Time::FromNanoseconds(ticks);
+    auto currentTime = Time::FromNanoseconds(1);
+    controller.readyNodes(currentTime, &ready);
 
-        // Fetch the list of nodes that are ready to tick
-        ready.clear();
-        controller.readyNodes(currentTime, &ready);
+    for (auto&& node : ready) {
+        std::cout << node->definition().name() << std::endl;
+    }
 
-        for (NodeBase* node : ready) {
-            node->inputs()->setCurrentTime(currentTime);
-            NodeOutputs* outputs = node->outputs();
-            outputs->clear();
-
-            // Tick this node and publish its outputs
-            node->tick();
-            controller.publishMessages(currentTime, *outputs);
-        }
-    } while (++ticks < TOTAL_TICKS);
+    controller.tickNodes(currentTime, ready);
 }
 
 }  // namespace ref

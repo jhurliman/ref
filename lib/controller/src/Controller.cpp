@@ -1,6 +1,7 @@
 #include "controller/Controller.h"
 
 #include <core/Format.h>
+#include <node/NodeInputs.h>
 #include <unordered_set>
 
 namespace ref {
@@ -22,10 +23,19 @@ Controller::Controller(const Graph& g, Controller::NodeFactoryFn nodeCreator)
 }
 
 void Controller::readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready) {
-    for(auto&& [name, node] : _nodes) {
+    for (auto&& [name, node] : _nodes) {
         if (node->readyToTick(currentTime)) {
             ready->push_back(node.get());
         }
+    }
+}
+
+void Controller::tickNodes(Time::TimePoint currentTime, std::vector<NodeBase*>& nodes) {
+    for (NodeBase* node : nodes) {
+        // Tick this node, clear its inputs, then publish its outputs
+        node->executeTick(currentTime);
+        node->inputs()->clear();
+        publishMessages(currentTime, *node->outputs());
     }
 }
 

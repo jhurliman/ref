@@ -21,6 +21,8 @@ public:
     void setCurrentTime(const Time::TimePoint now);
 
     void copyFromOutputs(const PublishedMessageMap& outputs);
+    void copyFromOutput(const PublishedMessageBase* message);
+    void clear();
     virtual void deserialize();
 
     template<class Message, class MessageT>

@@ -7,8 +7,8 @@ namespace ref {
 NodeInputs::NodeInputs(const NodeDefinition::IDToTopicMap& idToTopicMap)
         : _currentTime(Time::FromNanoseconds(0)), _idToTopicMap(idToTopicMap) {
     for (auto&& entry : idToTopicMap) {
-        const std::string& topicName = entry.second.name;
-        _received.try_emplace(topicName, entry.second);
+        const NodeDefinition::Topic& topic = entry.second;
+        _received.try_emplace(topic.name, topic);
     }
 }
 
@@ -28,20 +28,28 @@ void NodeInputs::setCurrentTime(const Time::TimePoint now) {
 
 void NodeInputs::copyFromOutputs(const PublishedMessageMap& outputs) {
     for (auto&& entry : outputs) {
-        if (!entry.second) {
-            continue;
-        }
+        copyFromOutput(entry.second);
+    }
+}
 
-        const auto it = _received.find(entry.first);
-        if (it == _received.end()) {
-            continue;
-        }
+void NodeInputs::copyFromOutput(const PublishedMessageBase* message) {
+    if (!message) {
+        return;
+    }
 
-        const PublishedMessageBase* output = entry.second;
-        ReceivedMessage& input = it->second;
+    const auto it = _received.find(message->topic.name);
+    if (it == _received.end()) {
+        return;
+    }
 
-        uint8_t* srcData = output->builder.GetBufferPointer();
-        input.data.assign(srcData, srcData + output->builder.GetSize());
+    ReceivedMessage& input = it->second;
+    uint8_t* srcData = message->builder.GetBufferPointer();
+    input.data.assign(srcData, srcData + message->builder.GetSize());
+}
+
+void NodeInputs::clear() {
+    for (auto&& entry : _received) {
+        entry.second.data.clear();
     }
 }
 
@@ -50,7 +58,7 @@ void NodeInputs::deserialize() {}
 const ReceivedMessage* NodeInputs::operator[](const std::string& topicName) const {
     auto it = _received.find(topicName);
     if (it == _received.end()) {
-        return {};
+        return nullptr;
     }
     return &it->second;
 }

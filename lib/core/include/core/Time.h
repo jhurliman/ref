@@ -35,6 +35,10 @@ uint64_t ToNanoseconds(const TimePoint time);
 
 double ToSeconds(const TimePoint time);
 
+double ToSeconds(const std::chrono::nanoseconds ns);
+
+std::string ToString(const TimePoint time);
+
 TimePoint FromNanoseconds(const uint64_t nsec);
 
 TimePoint FromSeconds(const double sec);

@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <shared_mutex>
+#include <sstream>
 
 namespace ref {
 
@@ -89,6 +90,16 @@ uint64_t ToNanoseconds(const TimePoint time) {
 
 double ToSeconds(const TimePoint time) {
     return double(ToNanoseconds(time)) / 10.0e9;
+}
+
+double ToSeconds(const std::chrono::nanoseconds ns) {
+    return std::chrono::duration<double, std::nano>(ns).count();
+}
+
+std::string ToString(const TimePoint time) {
+    std::ostringstream output;
+    output << ToNanoseconds(time);
+    return output.str();
 }
 
 TimePoint FromNanoseconds(const uint64_t nsec) {

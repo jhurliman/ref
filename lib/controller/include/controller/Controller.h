@@ -19,6 +19,7 @@ public:
 
     Time::HiResTimePoint nextDeadline();
     void readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready);
+    void tickNodes(Time::TimePoint currentTime, std::vector<NodeBase*>& nodes);
     void publishMessages(const Time::TimePoint currentTime, NodeOutputs& messages);
 
 private:
