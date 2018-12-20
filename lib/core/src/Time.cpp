@@ -93,7 +93,7 @@ double ToSeconds(const TimePoint time) {
 }
 
 double ToSeconds(const std::chrono::nanoseconds ns) {
-    return std::chrono::duration<double, std::nano>(ns).count();
+    return std::chrono::duration<double, std::ratio<1>>(ns).count();
 }
 
 std::string ToString(const TimePoint time) {
