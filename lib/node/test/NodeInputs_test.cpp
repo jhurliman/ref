@@ -1,5 +1,5 @@
 #include <Header_generated.h>
-#include <basic/BoolValue_generated.h>
+#include <basic/BoolValueStamped_generated.h>
 #include <core/Format.h>
 #include <gtest/gtest.h>
 #include <node/NodeInputs.h>
@@ -10,8 +10,8 @@ using namespace messages::basic;
 
 class TestInput : public NodeInputs {
 public:
-    std::unique_ptr<BoolValueT> a;
-    std::unique_ptr<BoolValueT> b;
+    std::unique_ptr<BoolValueStampedT> a;
+    std::unique_ptr<BoolValueStampedT> b;
 
     TestInput(const NodeDefinition::IDToTopicMap& idToTopicMap) : NodeInputs(idToTopicMap) {}
 
@@ -19,8 +19,8 @@ public:
 };
 
 void TestInput::deserialize() {
-    deserializeMessage<BoolValue, BoolValueT>(STR(a), &a);
-    deserializeMessage<BoolValue, BoolValueT>(STR(b), &b);
+    deserializeMessage<BoolValueStamped, BoolValueStampedT>(STR(a), &a);
+    deserializeMessage<BoolValueStamped, BoolValueStampedT>(STR(b), &b);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,14 +63,14 @@ TEST(NodeOutputs, CopyFromOutputsAndReset) {
     NodeDefinition::IDToTopicMap idToTopicMap{{"a", topicA}};
     TestInput input(idToTopicMap);
 
-    PublishedMessage<BoolValueT> outputA(topicA);
-    outputA.message = std::make_unique<BoolValueT>();
+    PublishedMessage<BoolValueStampedT> outputA(topicA);
+    outputA.message = std::make_unique<BoolValueStampedT>();
     outputA.message->header = std::make_unique<messages::HeaderT>();
     outputA.message->header->frame_id = "frame_id";
     outputA.message->header->publish_stamp = 1;
     outputA.message->header->sensor_stamp = 2;
     outputA.message->value = true;
-    outputA.builder.Finish(BoolValue::Pack(outputA.builder, outputA.message.get()));
+    outputA.builder.Finish(BoolValueStamped::Pack(outputA.builder, outputA.message.get()));
 
     PublishedMessageMap outputMap{{"/a", &outputA}};
 

@@ -15,6 +15,7 @@ TEST(NodeDefinition, OneNode) {
     EXPECT_EQ("a", def.name());
     EXPECT_EQ("A", def.nodeType());
     EXPECT_EQ(size_t(0), def.triggers().topicMatches.size());
+    EXPECT_EQ(NodeDefinition::Condition::Interval, def.triggers().condition);
     EXPECT_EQ(1.0, def.triggers().timeout);
     EXPECT_EQ(size_t(0), def.parameters().size());
     EXPECT_EQ(size_t(0), def.inputs().size());
@@ -23,9 +24,9 @@ TEST(NodeDefinition, OneNode) {
 
     auto& topic = def.outputs().begin()->second;
     EXPECT_EQ("/x", topic.name);
-    EXPECT_EQ("basic/BoolValue", topic.type.name);
-    EXPECT_EQ("a66c7ec12e42a654ff9f38b5e432948449b20f6cc6ca088ae74bbdb0cca34d99", topic.type.hash);
-    EXPECT_EQ(448, topic.type.schema.size());
+    EXPECT_EQ("basic/BoolValueStamped", topic.type.name);
+    EXPECT_EQ("b2a1382b9efb76f895b29a6085f9c96be2933583aa2c14e36d6b39ec92715873", topic.type.hash);
+    EXPECT_EQ(452, topic.type.schema.size());
 }
 
 TEST(NodeDefinition, WildcardNode) {
@@ -38,6 +39,7 @@ TEST(NodeDefinition, WildcardNode) {
     EXPECT_EQ("W", def.nodeType());
     ASSERT_EQ(1, def.triggers().topicMatches.size());
     EXPECT_EQ("*", def.triggers().topicMatches[0]);
+    EXPECT_EQ(NodeDefinition::Condition::Any, def.triggers().condition);
     EXPECT_EQ(0.0, def.triggers().timeout);
     EXPECT_EQ(size_t(0), def.parameters().size());
     EXPECT_EQ(size_t(0), def.inputs().size());

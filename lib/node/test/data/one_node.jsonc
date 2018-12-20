@@ -3,12 +3,12 @@
     {
       "name": "a",
       "type": "A",
-      "trigger": { "topics": [], "timeout": 1.0 },
+      "trigger": { "topics": [], "condition": "interval",  "timeout": 1.0 },
       "inputs": {},
       "outputs": {
         "x": {
           "topic": "/x",
-          "type": "basic/BoolValue"
+          "type": "basic/BoolValueStamped"
         }
       }
     }

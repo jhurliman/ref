@@ -36,6 +36,9 @@ private:
     mutable std::mutex _mutex;
     Time::TimePoint _lastTick;
 
+    bool hasAnyInputs();
+    bool hasAllInputs();
+
     // Delete the copy/assignment constructors
     NodeBase(const NodeBase&) = delete;
     NodeBase& operator=(NodeBase const&) = delete;

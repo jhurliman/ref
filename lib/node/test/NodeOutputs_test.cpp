@@ -1,5 +1,5 @@
 #include <Header_generated.h>
-#include <basic/BoolValue_generated.h>
+#include <basic/BoolValueStamped_generated.h>
 #include <core/Format.h>
 #include <gtest/gtest.h>
 #include <node/NodeOutputs.h>
@@ -12,14 +12,14 @@ using namespace messages::basic;
 class TestOutput : public NodeOutputs {
 public:
     // Normally these would be private, but we're exposing them for unit testing
-    PublishedMessage<BoolValueT> _a;
-    PublishedMessage<BoolValueT> _b;
+    PublishedMessage<BoolValueStampedT> _a;
+    PublishedMessage<BoolValueStampedT> _b;
 
-    inline std::unique_ptr<BoolValueT>& a() {
+    inline std::unique_ptr<BoolValueStampedT>& a() {
         return _a.message;
     }
 
-    inline std::unique_ptr<BoolValueT>& b() {
+    inline std::unique_ptr<BoolValueStampedT>& b() {
         return _b.message;
     }
 
@@ -30,8 +30,8 @@ public:
 };
 
 void TestOutput::serialize() {
-    serializeMessage<BoolValue, BoolValueT>(_a);
-    serializeMessage<BoolValue, BoolValueT>(_b);
+    serializeMessage<BoolValueStamped, BoolValueStampedT>(_a);
+    serializeMessage<BoolValueStamped, BoolValueStampedT>(_b);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ TEST(NodeOutputs, Serialize) {
     NodeDefinition::IDToTopicMap idToTopicMap{{"a", topicA}};
     TestOutput output(idToTopicMap);
 
-    output.a() = std::make_unique<BoolValueT>();
+    output.a() = std::make_unique<BoolValueStampedT>();
     output.a()->header = std::make_unique<messages::HeaderT>();
     output.a()->header->publish_stamp = 1;
     output.a()->header->sensor_stamp = 2;

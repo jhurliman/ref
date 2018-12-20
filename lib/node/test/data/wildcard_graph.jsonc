@@ -5,30 +5,31 @@
       "type": "W",
       "trigger": {
         "topics": ["*"],
+        "condition": "any", 
         "timeout": 0.0
       }
     },
     {
       "name": "a",
       "type": "A",
-      "trigger": { "topics": [], "timeout": 0.0 },
+      "trigger": {},
       "inputs": {},
       "outputs": {
         "x": {
           "topic": "/x",
-          "type": "basic/BoolValue"
+          "type": "basic/BoolValueStamped"
         }
       }
     },
     {
       "name": "b",
       "type": "B",
-      "trigger": { "topics": [], "timeout": 0.0 },
+      "trigger": {},
       "inputs": {},
       "outputs": {
         "x": {
           "topic": "/y",
-          "type": "basic/BoolValue"
+          "type": "basic/BoolValueStamped"
         }
       }
     }

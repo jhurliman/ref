@@ -6,7 +6,7 @@
 namespace ref {
 
 NodeBase::NodeBase(const NodeDefinition& def, const Graph& graph)
-        : _definition(def), _graph(graph), _lastTick{} {}
+        : _definition(def), _graph(graph), _lastTick(Time::FromNanoseconds(0)) {}
 
 const NodeDefinition& NodeBase::definition() const {
     return _definition;
@@ -21,25 +21,26 @@ std::mutex& NodeBase::mutex() const {
 }
 
 bool NodeBase::readyToTick(const Time::TimePoint currentTime) {
-    // Check if all required topics are present
-    if (_definition.triggeringTopics().size()) {
-        bool hasAllTopics = true;
-        const ReceivedMessageMap& received = inputs()->allMessages();
-        for (auto&& topicName : _definition.triggeringTopics()) {
-            auto it = received.find(topicName);
-            if (it == received.end() || !it->second.data.size()) {
-                hasAllTopics = false;
-                break;
-            }
-        }
+    auto& triggers = _definition.triggers();
 
-        if (hasAllTopics) {
+    // Check if the input topics condition has been met
+    switch (triggers.condition) {
+    case NodeDefinition::Condition::Any:
+        if (hasAnyInputs()) {
             return true;
         }
+        break;
+    case NodeDefinition::Condition::All:
+        if (hasAllInputs()) {
+            return true;
+        }
+        break;
+    case NodeDefinition::Condition::Interval:
+        break;
     }
 
     // Check for a timeout
-    const double timeout = _definition.triggers().timeout;
+    const double timeout = triggers.timeout;
     if (timeout > 0.0 && Time::ToSeconds(currentTime - _lastTick) >= timeout) {
         return true;
     }
@@ -60,6 +61,34 @@ void NodeBase::executeTick(const Time::TimePoint currentTime) {
     outputs()->clear();
 
     tick();
+}
+
+bool NodeBase::hasAnyInputs() {
+    const ReceivedMessageMap& received = inputs()->allMessages();
+    for (auto&& topicName : _definition.triggeringTopics()) {
+        auto it = received.find(topicName);
+        if (it != received.end() && it->second.data.size()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool NodeBase::hasAllInputs() {
+    if (!_definition.triggeringTopics().size()) {
+        return false;
+    }
+
+    const ReceivedMessageMap& received = inputs()->allMessages();
+    for (auto&& topicName : _definition.triggeringTopics()) {
+        auto it = received.find(topicName);
+        if (it == received.end() || !it->second.data.size()) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 }  // namespace ref

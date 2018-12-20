@@ -52,6 +52,19 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
             reqs.topicMatches.push_back(el.asString());
         }
     }
+
+    std::string condition = nodeJson["trigger"]["condition"].asString();
+    if (condition.empty() || condition == "any") {
+        reqs.condition = Condition::Any;
+    } else if (condition == "all") {
+        reqs.condition = Condition::All;
+    } else if (condition == "interval") {
+        reqs.condition = Condition::Interval;
+    } else if (!condition.empty()) {
+        LOG_ERROR(Format("Unrecognized condition '%s'", condition));
+        return {};
+    }
+
     reqs.timeout = nodeJson["trigger"]["timeout"].asDouble();
 
     Parameters params(nodeJson["parameters"]);

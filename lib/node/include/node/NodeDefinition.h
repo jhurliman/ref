@@ -14,6 +14,8 @@ class Graph;
 
 class NodeDefinition {
 public:
+    enum class Condition { Any, All, Interval };
+
     struct TopicType {
         std::string name;
         std::string hash;
@@ -33,6 +35,7 @@ public:
 
     struct TriggerRequirements {
         std::vector<std::string> topicMatches;
+        Condition condition;
         double timeout;
     };
 

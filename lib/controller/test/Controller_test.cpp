@@ -46,6 +46,22 @@ uint64_t constexpr Hash(const char* m) {
     return (*m) ? Mix(*m, Hash(m + 1)) : 0;
 }
 
+static void
+Tick(Controller& controller, std::vector<NodeBase*>& ready, const Time::TimePoint currentTime) {
+    ready.clear();
+    controller.readyNodes(currentTime, &ready);
+    controller.tickNodes(currentTime, ready);
+}
+
+static bool ContainsNode(const std::string& name, std::vector<NodeBase*>& nodes) {
+    for (auto&& node : nodes) {
+        if (node->definition().name() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 TEST(Controller, BasicRobot) {
     Json::Value json = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
     Graph g(".", json["nodes"]);
@@ -65,16 +81,18 @@ TEST(Controller, BasicRobot) {
     auto nodeCreator = [&](const NodeDefinition& def) -> std::unique_ptr<NodeBase> {
         switch (Hash(def.nodeType().c_str())) {
         case Hash("CameraDriver"):
-        case Hash("NavSatDriver"):
-        case Hash("ImageDecoding"):
-        case Hash("Rectification"):
-        case Hash("Odometry"):
-        case Hash("Tracking"):
-        case Hash("RoutePlanning"):
-        case Hash("ManeuverPlanning"):
         case Hash("Controls"):
+        case Hash("ImageDecoding"):
+        case Hash("ManeuverPlanning"):
+        case Hash("MapTilePublisher"):
+        case Hash("NavSatDriver"):
+        case Hash("Odometry"):
+        case Hash("Prediction"):
         case Hash("Recorder"):
+        case Hash("Rectification"):
+        case Hash("RoutePlanning"):
         case Hash("SystemHealth"):
+        case Hash("Tracking"):
             return std::make_unique<TestNode>(def, g, tickCallback);
         default:
             throw std::runtime_error(Format("Unknown node type %s", def.nodeType()));
@@ -84,14 +102,26 @@ TEST(Controller, BasicRobot) {
     Controller controller(g, nodeCreator);
     std::vector<NodeBase*> ready;
 
-    auto currentTime = Time::FromNanoseconds(1);
-    controller.readyNodes(currentTime, &ready);
+    Tick(controller, ready, Time::FromSeconds(0));
+    EXPECT_EQ(size_t(0), ready.size());
 
-    for (auto&& node : ready) {
-        std::cout << node->definition().name() << std::endl;
-    }
+    Tick(controller, ready, Time::FromSeconds(0.01));
+    EXPECT_EQ(1, ready.size());
+    EXPECT_TRUE(ContainsNode("controls", ready));
 
-    controller.tickNodes(currentTime, ready);
+    Tick(controller, ready, Time::FromSeconds(0.05));
+    EXPECT_EQ(2, ready.size());
+    EXPECT_TRUE(ContainsNode("controls", ready));
+    EXPECT_TRUE(ContainsNode("maneuver_planning", ready));
+
+    Tick(controller, ready, Time::FromSeconds(0.1));
+    EXPECT_EQ(6, ready.size());
+    EXPECT_TRUE(ContainsNode("camera_front", ready));
+    EXPECT_TRUE(ContainsNode("camera_rear", ready));
+    EXPECT_TRUE(ContainsNode("controls", ready));
+    EXPECT_TRUE(ContainsNode("maneuver_planning", ready));
+    EXPECT_TRUE(ContainsNode("prediction", ready));
+    EXPECT_TRUE(ContainsNode("system_health", ready));
 }
 
 }  // namespace ref

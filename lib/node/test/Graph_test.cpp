@@ -6,10 +6,10 @@
 namespace ref {
 
 TEST(Graph, OneNode) {
-    constexpr const char* SCHEMA_TYPE = "basic/BoolValue";
+    constexpr const char* SCHEMA_TYPE = "basic/BoolValueStamped";
     constexpr const char* SCHEMA_HASH =
-            "a66c7ec12e42a654ff9f38b5e432948449b20f6cc6ca088ae74bbdb0cca34d99";
-    constexpr size_t SCHEMA_SIZE = 448;
+            "b2a1382b9efb76f895b29a6085f9c96be2933583aa2c14e36d6b39ec92715873";
+    constexpr size_t SCHEMA_SIZE = 452;
 
     Json::Value json = ParseJSONFile("lib/node/test/data/one_node.jsonc");
     Graph g(".", json["nodes"]);

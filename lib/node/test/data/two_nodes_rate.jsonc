@@ -8,7 +8,7 @@
       "outputs": {
         "x": {
           "topic": "/x",
-          "type": "basic/BoolValue"
+          "type": "basic/BoolValueStamped"
         }
       }
     },
