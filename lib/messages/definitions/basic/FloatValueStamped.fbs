@@ -1,0 +1,10 @@
+include "../Header.fbs";
+
+namespace ref.messages.basic;
+
+table FloatValueStamped {
+    header:Header;
+    value:float;
+}
+
+root_type FloatValueStamped;

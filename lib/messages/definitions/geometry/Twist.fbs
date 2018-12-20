@@ -1,0 +1,9 @@
+include "../geometry/Vector3.fbs";
+
+namespace ref.messages.geometry;
+
+struct Twist {
+    // This expresses velocity in free space broken into its linear and angular parts
+    linear:Vector3;
+    angular:Vector3;
+}

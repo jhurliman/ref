@@ -1,0 +1,16 @@
+include "../Header.fbs";
+
+namespace ref.messages.nav;
+
+struct TileRequest {
+    x:uint;
+    y:uint;
+    zoom:uint;
+}
+
+table MapTilesRequest {
+    header:Header;
+    tiles:[TileRequest];
+}
+
+root_type MapTilesRequest;

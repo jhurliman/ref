@@ -1,11 +1,15 @@
 include "../Header.fbs";
+include "../geometry/PoseWithCovariance.fbs";
+include "../geometry/TwistWithCovariance.fbs";
 
 namespace ref.messages.nav;
 
 table Odometry {
     header:Header;
-
-    // TODO
+    parent_frame_id:string;
+    child_frame_id:string;
+    pose:geometry.PoseWithCovariance;  // Specified in the parent_frame_id coordinate frame
+    twist:geometry.TwistWithCovariance;  // Specified in the child_frame_id coordinate frame
 }
 
 root_type Odometry;

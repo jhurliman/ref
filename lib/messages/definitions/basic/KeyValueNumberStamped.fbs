@@ -4,7 +4,6 @@ namespace ref.messages.basic;
 
 table KeyValueNumber {
     header:Header;
-
     key:string;
     value:double;
 }

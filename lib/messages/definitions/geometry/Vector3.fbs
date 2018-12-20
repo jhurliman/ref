@@ -1,0 +1,7 @@
+namespace ref.messages.geometry;
+
+struct Vector3 {
+    x:double;
+    y:double;
+    z:double;
+}

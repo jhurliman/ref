@@ -1,0 +1,8 @@
+namespace ref.messages.geometry;
+
+struct Quaternion {
+    x:double;
+    y:double;
+    z:double;
+    w:double;
+}

@@ -2,10 +2,9 @@ include "../Header.fbs";
 
 namespace ref.messages.basic;
 
-table BoolValue {
+table BoolValueStamped {
     header:Header;
-
     value:bool;
 }
 
-root_type BoolValue;
+root_type BoolValueStamped;

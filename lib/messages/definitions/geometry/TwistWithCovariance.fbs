@@ -1,0 +1,9 @@
+include "../geometry/CovarianceMatrix.fbs";
+include "../geometry/Twist.fbs";
+
+namespace ref.messages.geometry;
+
+struct TwistWithCovariance {
+    twist:Twist;
+    covariance:CovarianceMatrix;
+}

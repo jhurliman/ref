@@ -1,0 +1,9 @@
+include "Quaternion.fbs";
+include "Vector3.fbs";
+
+namespace ref.messages.geometry;
+
+struct Transform {
+    translation:Vector3;
+    rotation:Quaternion;
+}

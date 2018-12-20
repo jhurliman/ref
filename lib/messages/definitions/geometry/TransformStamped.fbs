@@ -1,11 +1,12 @@
 include "../Header.fbs";
+include "Transform.fbs";
 
 namespace ref.messages.geometry;
 
 table TransformStamped {
     header:Header;
-
-    // TODO
+    child_frame_id:string;
+    transform:Transform;
 }
 
 root_type TransformStamped;

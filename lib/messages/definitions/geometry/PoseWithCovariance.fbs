@@ -1,0 +1,9 @@
+include "../geometry/CovarianceMatrix.fbs";
+include "../geometry/Pose.fbs";
+
+namespace ref.messages.geometry;
+
+struct PoseWithCovariance {
+    pose:Pose;
+    covariance:CovarianceMatrix;
+}

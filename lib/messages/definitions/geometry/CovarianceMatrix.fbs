@@ -1,0 +1,23 @@
+namespace ref.messages.geometry;
+
+struct CovarianceRow {
+    x:double;
+    y:double;
+    z:double;
+    rot_x:double;
+    rot_y:double;
+    rot_z:double;
+}
+
+struct CovarianceMatrix {
+    // Row-major representation of the 6x6 covariance matrix.
+    // The orientation parameters use a fixed-axis representation.
+    // In order, the parameters are:
+    // (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis)
+    x:CovarianceRow;
+    y:CovarianceRow;
+    z:CovarianceRow;
+    rot_x:CovarianceRow;
+    rot_y:CovarianceRow;
+    rot_z:CovarianceRow;
+}
