@@ -139,7 +139,8 @@ TEST(Controller, BasicRobot) {
 
     Tick(controller, ready, Time::FromNanoseconds(100000000));
     EXPECT_EQ(3, ready.size());
-    // Triggers because /predictions published in the third tick and /odom published in the previous tick
+    // Triggers because /predictions published in the third tick and /odom published in the previous
+    // tick
     EXPECT_TRUE(ContainsNode("route_planning", ready));
     // Triggers because /odom published in the previous tick
     EXPECT_TRUE(ContainsNode("tracking", ready));
