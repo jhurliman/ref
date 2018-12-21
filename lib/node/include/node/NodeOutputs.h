@@ -9,7 +9,7 @@ class NodeOutputs {
 public:
     NodeOutputs(const NodeDefinition::IDToTopicMap& idToTopicMap);
     virtual ~NodeOutputs();
-    const PublishedMessageMap& allMessages() const;
+    PublishedMessageMap& allMessages();
     void clear();
     virtual void serialize();
 

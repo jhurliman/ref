@@ -61,6 +61,8 @@ void NodeBase::executeTick(const Time::TimePoint currentTime) {
     outputs()->clear();
 
     tick();
+
+    inputs()->clear();
 }
 
 bool NodeBase::hasAnyInputs() {
