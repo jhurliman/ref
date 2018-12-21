@@ -38,14 +38,6 @@ void TestNode::tick() {
     _tickCallback(*this);
 }
 
-uint64_t constexpr Mix(char m, uint64_t s) {
-    return ((s << 7) + ~(s >> 3)) + ~uint64_t(m);
-}
-
-uint64_t constexpr Hash(const char* m) {
-    return (*m) ? Mix(*m, Hash(m + 1)) : 0;
-}
-
 static void
 Tick(Controller& controller, std::vector<NodeBase*>& ready, const Time::TimePoint currentTime) {
     ready.clear();
@@ -104,24 +96,7 @@ TEST(Controller, BasicRobot) {
     };
 
     auto nodeCreator = [&](const NodeDefinition& def) -> std::unique_ptr<NodeBase> {
-        switch (Hash(def.nodeType().c_str())) {
-        case Hash("CameraDriver"):
-        case Hash("Controls"):
-        case Hash("ImageDecoding"):
-        case Hash("ManeuverPlanning"):
-        case Hash("MapTilePublisher"):
-        case Hash("NavSatDriver"):
-        case Hash("Odometry"):
-        case Hash("Prediction"):
-        case Hash("Recorder"):
-        case Hash("Rectification"):
-        case Hash("RoutePlanning"):
-        case Hash("SystemHealth"):
-        case Hash("Tracking"):
-            return std::make_unique<TestNode>(def, g, tickCallback);
-        default:
-            throw std::runtime_error(Format("Unknown node type %s", def.nodeType()));
-        }
+        return std::make_unique<TestNode>(def, g, tickCallback);
     };
 
     Controller controller(g, nodeCreator);
