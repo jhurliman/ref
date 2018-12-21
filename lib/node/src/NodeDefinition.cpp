@@ -187,7 +187,7 @@ NodeDefinition::parseOutput(const std::string& dataDir, const Json::Value& entry
         LOG_ERROR("Cannot open schema %s", path);
         return {};
     }
-    topic.type.schema.reserve(FileLength(schema));
+    topic.type.schema.reserve(filesystem::FileLength(schema));
     std::copy(
             std::istream_iterator<uint8_t>(schema),
             std::istream_iterator<uint8_t>(),

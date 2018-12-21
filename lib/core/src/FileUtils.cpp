@@ -12,6 +12,8 @@
 
 namespace ref {
 
+namespace filesystem {
+
 size_t FileLength(std::ifstream& file) {
     auto pos = file.tellg();
     file.seekg(0, std::ios::end);
@@ -21,7 +23,7 @@ size_t FileLength(std::ifstream& file) {
 }
 
 std::string ApplicationDir() {
-    return filesystem::path(ApplicationPath()).parent_path().str();
+    return ::filesystem::path(ApplicationPath()).parent_path().str();
 }
 
 #ifdef __APPLE__
@@ -51,7 +53,9 @@ std::string ApplicationPath() {
 #endif
 
 std::string JoinPath(const std::string& base, const std::string& part) {
-    return (filesystem::path(base) / filesystem::path(part)).str();
+    return (::filesystem::path(base) / ::filesystem::path(part)).str();
 }
+
+}  // namespace filesystem
 
 }  // namespace ref

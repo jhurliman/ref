@@ -13,10 +13,11 @@
 #include <unistd.h>
 
 static void loop() {
+    using namespace ref::filesystem;
     using namespace std::chrono_literals;
 
-    std::string baseDir = ref::JoinPath(ref::ApplicationDir(), "chaser.runfiles/ref_ws");
-    std::string configPath = ref::JoinPath(baseDir, "chaser/config/chaser.jsonc");
+    std::string baseDir = JoinPath(ApplicationDir(), "chaser.runfiles/ref_ws");
+    std::string configPath = JoinPath(baseDir, "chaser/config/chaser.jsonc");
 
     Json::Value config;
     std::ifstream configFile(configPath, std::ifstream::binary);

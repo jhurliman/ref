@@ -17,7 +17,7 @@ Recording::Recording(const std::string& filename)
     }
 
     // Retrieve the total file size
-    _fileLength = FileLength(_infile);
+    _fileLength = filesystem::FileLength(_infile);
     if (_fileLength < 36) {
         throw std::runtime_error("Recording file is too small");
     }
