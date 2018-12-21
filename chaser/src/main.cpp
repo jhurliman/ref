@@ -1,4 +1,5 @@
 #include <core/Assert.h>
+#include <core/FileUtils.h>
 #include <core/Log.h>
 #include <messages/Recording.h>
 #include <node/Graph.h>
@@ -14,14 +15,17 @@
 static void loop() {
     using namespace std::chrono_literals;
 
+    std::string baseDir = ref::JoinPath(ref::ApplicationDir(), "chaser.runfiles/ref_ws");
+    std::string configPath = ref::JoinPath(baseDir, "chaser/config/chaser.jsonc");
+
     Json::Value config;
-    std::ifstream configFile("chaser/config/chaser.jsonc", std::ifstream::binary);
+    std::ifstream configFile(configPath, std::ifstream::binary);
     if (!configFile.is_open()) {
-        ABORT_ALWAYS("Failed to open chaser/config/chaser.jsonc");
+        ABORT_ALWAYS(ref::Format("Failed to open %s", configPath).c_str());
     }
     configFile >> config;
 
-    ref::Graph g("deploy/bin/chaser/chaser.runfiles/ref_ws", config["nodes"]);
+    ref::Graph g(baseDir, config["nodes"]);
 
     g.writeDot(std::cout);
 
@@ -50,15 +54,7 @@ static void loop() {
 }
 
 int main(int, char const* []) {
-    // ref::Time::Init(Time::FromSeconds(1));
     ref::Time::Init();
-
-    // eigen_test();
-    // usb_test();
-    // jpeg_test();
-    // libuvc_test();
-
     loop();
-
     return 0;
 }
