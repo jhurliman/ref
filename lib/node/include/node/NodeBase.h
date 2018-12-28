@@ -14,13 +14,12 @@ class NodeOutputs;
 
 class NodeBase {
 public:
-    virtual ~NodeBase() {};
+    virtual ~NodeBase(){};
 
     const NodeDefinition& definition() const;
     const Graph& graph() const;
     std::mutex& mutex() const;
-    bool readyToTick(const Time::TimePoint currentTime);
-    void publishMessage(const Time::TimePoint currentTime, const PublishedMessageBase* message);
+    bool readyToTick(const Time::TimePoint currentTime, Time::TimePoint* tickDeadline = nullptr);
     void executeTick(const Time::TimePoint currentTime);
 
     virtual NodeInputs* inputs() = 0;

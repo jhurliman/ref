@@ -20,18 +20,26 @@ std::mutex& NodeBase::mutex() const {
     return _mutex;
 }
 
-bool NodeBase::readyToTick(const Time::TimePoint currentTime) {
+bool NodeBase::readyToTick(const Time::TimePoint currentTime, Time::TimePoint* tickDeadline) {
+    Time::TimePoint unused;
+    if (!tickDeadline) {
+        tickDeadline = &unused;
+    }
+    *tickDeadline = Time::DISTANT_FUTURE;
+
     auto& triggers = _definition.triggers();
 
     // Check if the input topics condition has been met
     switch (triggers.condition) {
     case NodeDefinition::Condition::Any:
         if (hasAnyInputs()) {
+            *tickDeadline = currentTime;
             return true;
         }
         break;
     case NodeDefinition::Condition::All:
         if (hasAllInputs()) {
+            *tickDeadline = currentTime;
             return true;
         }
         break;
@@ -41,17 +49,17 @@ bool NodeBase::readyToTick(const Time::TimePoint currentTime) {
 
     // Check for a timeout
     const double timeout = triggers.timeout;
-    if (timeout > 0.0 && Time::ToSeconds(currentTime - _lastTick) >= timeout) {
-        return true;
+    if (timeout > 0.0) {
+        // Set the deadline to whenever this node times out in the future or the
+        // current time, whichever is later
+        *tickDeadline = Time::Max(Time::AddSeconds(_lastTick, timeout), currentTime);
+
+        if (Time::ToSeconds(currentTime - _lastTick) >= timeout) {
+            return true;
+        }
     }
 
     return false;
-}
-
-void NodeBase::publishMessage(
-        const Time::TimePoint currentTime,
-        const PublishedMessageBase* message) {
-    inputs()->copyFromOutput(message);
 }
 
 void NodeBase::executeTick(const Time::TimePoint currentTime) {

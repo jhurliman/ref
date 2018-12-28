@@ -25,10 +25,10 @@
 
 namespace ref {
 
-[[noreturn]] __attribute__((cold)) void Abort(const char* message) noexcept;
+[[noreturn]] __attribute__((cold)) void Abort(const std::string_view message) noexcept;
 
 [[noreturn]] __attribute__((cold)) void
-Abort(int lineNumber, const char* filename, const char* message) noexcept;
+Abort(int lineNumber, const char* filename, const std::string_view message) noexcept;
 
 [[noreturn]] __attribute__((cold)) void
 Assert(const char* expression,

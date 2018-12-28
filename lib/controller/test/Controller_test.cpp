@@ -39,14 +39,16 @@ void TestNode::tick() {
 }
 
 static void
-Tick(Controller& controller, std::vector<NodeBase*>& ready, const Time::TimePoint currentTime) {
-    ready.clear();
-    controller.readyNodes(currentTime, &ready);
-    std::cout << "[READY] ";
-    for (auto&& node : ready) {
-        std::cout << node->definition().name() << ",";
-    }
-    std::cout << std::endl;
+Tick(Controller& controller,
+     std::vector<NodeBase*>& ready,
+     const Time::TimePoint currentTime,
+     Time::TimePoint& tickDeadline) {
+    controller.readyNodes(currentTime, &ready, &tickDeadline);
+    // std::cout << "[READY] ";
+    // for (auto&& node : ready) {
+    //     std::cout << node->definition().name() << ",";
+    // }
+    // std::cout << std::endl;
     controller.tickNodes(currentTime, ready);
 }
 
@@ -75,46 +77,53 @@ TEST(Controller, BasicRobot) {
     Json::Value json = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
     Graph g(".", json["nodes"]);
 
-#if 0
     // Print the graph to stdout in DOT (graphviz) format
-    std::stringstream ss;
-    g.writeDot(ss);
-    std::cout << ss.str() << std::endl;
-#endif
+    // std::stringstream ss;
+    // g.writeDot(ss);
+    // std::cout << ss.str() << std::endl;
 
     auto tickCallback = [](TestNode& node) {
-        std::cout << node.definition().name() << " ticked at time "
-                  << Time::ToString(node.inputs()->currentTime()) << std::endl;
+        // std::cout << node.definition().name() << " ticked at time "
+        //           << Time::ToString(node.inputs()->currentTime()) << std::endl;
 
         for (auto&& entry : node.definition().outputs()) {
             const auto& topic = entry.second;
-            std::cout << "Publishing to " << topic.name << std::endl;
+            // std::cout << "Publishing to " << topic.name << std::endl;
             PublishedMessageBase* msg = GetOrCreateMessage(topic);
             msg->builder.PushFlatBuffer(reinterpret_cast<uint8_t*>(malloc(1)), 1);
             node.outputs()->allMessages()[topic.name] = msg;
         }
     };
 
-    auto nodeCreator = [&](const NodeDefinition& def) -> std::unique_ptr<NodeBase> {
-        return std::make_unique<TestNode>(def, g, tickCallback);
+    auto factory = [&](const NodeDefinition& def, const Graph& g_) -> std::unique_ptr<NodeBase> {
+        return std::make_unique<TestNode>(def, g_, tickCallback);
     };
 
-    Controller controller(g, nodeCreator);
+    Controller controller(g, factory);
     std::vector<NodeBase*> ready;
+    Time::TimePoint t;
+    Time::TimePoint tickDeadline;
 
-    Tick(controller, ready, Time::FromNanoseconds(0));
+    t = Time::FromNanoseconds(0);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(size_t(0), ready.size());
+    EXPECT_EQ(Time::FromSeconds(0.01), tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(10000000));
+    t = Time::FromNanoseconds(10000000);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(1, ready.size());
     EXPECT_TRUE(ContainsNode("controls", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(50000000));
+    t = Time::FromNanoseconds(50000000);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(2, ready.size());
     EXPECT_TRUE(ContainsNode("controls", ready));
     EXPECT_TRUE(ContainsNode("maneuver_planning", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000000));
+    t = Time::FromNanoseconds(100000000);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(6, ready.size());
     EXPECT_TRUE(ContainsNode("camera_front", ready));
     EXPECT_TRUE(ContainsNode("camera_rear", ready));
@@ -122,22 +131,26 @@ TEST(Controller, BasicRobot) {
     EXPECT_TRUE(ContainsNode("maneuver_planning", ready));
     EXPECT_TRUE(ContainsNode("prediction", ready));
     EXPECT_TRUE(ContainsNode("system_health", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000000));
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(1, ready.size());
     EXPECT_TRUE(ContainsNode("image_decoding", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000000));
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(2, ready.size());
     EXPECT_TRUE(ContainsNode("image_rect_front", ready));
     EXPECT_TRUE(ContainsNode("image_rect_rear", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000000));
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(2, ready.size());
     EXPECT_TRUE(ContainsNode("odometry", ready));
     EXPECT_TRUE(ContainsNode("tracking", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000000));
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(3, ready.size());
     // Triggers because /predictions published in the third tick and /odom published in the previous
     // tick
@@ -145,28 +158,37 @@ TEST(Controller, BasicRobot) {
     // Triggers because /odom published in the previous tick
     EXPECT_TRUE(ContainsNode("tracking", ready));
     EXPECT_TRUE(ContainsNode("map_tile_publisher", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000000));
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(size_t(0), ready.size());
+    EXPECT_EQ(Time::FromNanoseconds(110000000), tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(100000001));
+    t = Time::FromNanoseconds(100000001);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(size_t(0), ready.size());
+    EXPECT_EQ(Time::FromNanoseconds(110000000), tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(199999999));
+    t = Time::FromNanoseconds(199999999);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(2, ready.size());
     EXPECT_TRUE(ContainsNode("controls", ready));
     EXPECT_TRUE(ContainsNode("maneuver_planning", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(200000000));
+    t = Time::FromNanoseconds(200000000);
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(4, ready.size());
     EXPECT_TRUE(ContainsNode("camera_front", ready));
     EXPECT_TRUE(ContainsNode("camera_rear", ready));
     EXPECT_TRUE(ContainsNode("prediction", ready));
     EXPECT_TRUE(ContainsNode("system_health", ready));
+    EXPECT_EQ(t, tickDeadline);
 
-    Tick(controller, ready, Time::FromNanoseconds(200000000));
+    Tick(controller, ready, t, tickDeadline);
     EXPECT_EQ(1, ready.size());
     EXPECT_TRUE(ContainsNode("image_decoding", ready));
+    EXPECT_EQ(t, tickDeadline);
 }
 
 }  // namespace ref

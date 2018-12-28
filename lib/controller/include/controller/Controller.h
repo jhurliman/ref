@@ -13,14 +13,13 @@ namespace ref {
 
 class Controller {
 public:
-    using NodeFactoryFn = std::function<std::unique_ptr<NodeBase>(const NodeDefinition& nodeDef)>;
+    using NodeFactoryFn = std::function<std::unique_ptr<NodeBase>(const NodeDefinition& nodeDef, const Graph& g)>;
 
     Controller(const Graph& g, NodeFactoryFn nodeCreator);
 
-    Time::HiResTimePoint nextDeadline();
-    void readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready);
+    void readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready, Time::TimePoint* tickDeadline);
     void tickNodes(Time::TimePoint currentTime, std::vector<NodeBase*>& nodes);
-    void publishMessages(const Time::TimePoint currentTime, NodeOutputs& messages);
+    void publishMessages(NodeOutputs& messages);
 
 private:
     const Graph& _g;

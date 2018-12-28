@@ -10,7 +10,7 @@ Controller::Controller(const Graph& g, Controller::NodeFactoryFn nodeCreator)
         : _g(g), _nodeCreator(nodeCreator) {
     // Instantiate all of the nodes defined in the graph
     for (auto&& nodeDef : _g.nodes()) {
-        _nodes[nodeDef.name()] = _nodeCreator(nodeDef);
+        _nodes[nodeDef.name()] = _nodeCreator(nodeDef, _g);
     }
 
     // Create a mapping from topic name to nodes triggered by publishing that topic
@@ -22,29 +22,40 @@ Controller::Controller(const Graph& g, Controller::NodeFactoryFn nodeCreator)
     }
 }
 
-void Controller::readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready) {
+void Controller::readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready, Time::TimePoint* tickDeadline) {
+    ready->clear();
+
+    Time::TimePoint unused;
+    if (!tickDeadline) {
+        tickDeadline = &unused;
+    }
+    *tickDeadline = Time::DISTANT_FUTURE;
+
+    Time::TimePoint thisDeadline;
     for (auto&& [name, node] : _nodes) {
-        if (node->readyToTick(currentTime)) {
+        if (node->readyToTick(currentTime, &thisDeadline)) {
+            *tickDeadline = currentTime;
             ready->push_back(node.get());
+        } else {
+            *tickDeadline = Time::Min(*tickDeadline, thisDeadline);
         }
     }
 }
 
 void Controller::tickNodes(Time::TimePoint currentTime, std::vector<NodeBase*>& nodes) {
     for (NodeBase* node : nodes) {
-        // Tick this node, clear its inputs, then publish its outputs
+        // Tick this node then publish its outputs
         node->executeTick(currentTime);
-        node->inputs()->clear();
-        publishMessages(currentTime, *node->outputs());
+        publishMessages(*node->outputs());
     }
 }
 
-void Controller::publishMessages(const Time::TimePoint currentTime, NodeOutputs& messages) {
+void Controller::publishMessages(NodeOutputs& messages) {
     for (auto&& [topic, message] : messages.allMessages()) {
         auto it = _topicsToNodes.find(topic);
         if (it != _topicsToNodes.end()) {
             for (NodeBase* node : it->second) {
-                node->publishMessage(currentTime, message);
+                node->inputs()->copyFromOutput(message);
             }
         }
     }

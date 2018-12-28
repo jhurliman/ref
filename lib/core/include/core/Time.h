@@ -13,15 +13,14 @@ namespace ref {
 namespace Time {
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>;
-using HiResTimePoint = std::chrono::high_resolution_clock::time_point;
+
+extern TimePoint DISTANT_FUTURE;
 
 void Init(Optional<TimePoint> simTime = Nullopt);
 
 bool IsValid();
 
 TimePoint NowWall();
-
-HiResTimePoint NowHiRes();
 
 timespec ToTimespec(uint64_t ns);
 
@@ -44,6 +43,12 @@ TimePoint FromNanoseconds(const uint64_t nsec);
 TimePoint FromSeconds(const double sec);
 
 TimePoint FromTimeval(const timeval time);
+
+TimePoint AddSeconds(const TimePoint time, const double sec);
+
+TimePoint Min(const TimePoint a, const TimePoint b);
+
+TimePoint Max(const TimePoint a, const TimePoint b);
 
 double DeltaMS(const TimePoint from, const TimePoint to);
 

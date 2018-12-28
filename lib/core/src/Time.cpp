@@ -8,6 +8,8 @@ namespace ref {
 
 namespace Time {
 
+TimePoint DISTANT_FUTURE = FromNanoseconds(INT64_MAX);
+
 static const TimePoint EPOCH;
 static bool _HasInitialized = false;
 static TimePoint _SimTime;
@@ -32,10 +34,6 @@ bool IsValid() {
 
 TimePoint NowWall() {
     return std::chrono::system_clock::now();
-}
-
-HiResTimePoint NowHiRes() {
-    return std::chrono::high_resolution_clock::now();
 }
 
 timespec ToTimespec(uint64_t ns) {
@@ -117,6 +115,19 @@ TimePoint FromTimeval(const timeval time) {
     constexpr uint64_t NS_PER_USEC = 1000;  // nanoseconds per microsecond
     return FromNanoseconds(
             uint64_t(time.tv_sec) * NS_PER_SEC + uint64_t(time.tv_usec) * NS_PER_USEC);
+}
+
+TimePoint AddSeconds(const TimePoint time, const double sec) {
+    std::chrono::duration<double, std::ratio<1>> delta(sec);
+    return time + std::chrono::duration_cast<TimePoint::duration>(delta);
+}
+
+TimePoint Min(const TimePoint a, const TimePoint b) {
+    return (a <= b) ? a : b;
+}
+
+TimePoint Max(const TimePoint a, const TimePoint b) {
+    return (a >= b) ? a : b;
 }
 
 double DeltaMS(const TimePoint from, const TimePoint to) {
