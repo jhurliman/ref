@@ -6,11 +6,20 @@
 
 namespace ref {
 
-Controller::Controller(const Graph& g, Controller::NodeFactoryFn nodeCreator)
-        : _g(g), _nodeCreator(nodeCreator) {
+void Controller::initialize(
+        const Graph& g,
+        const std::unordered_map<std::string, Controller::NodeFactoryFn>& nodeFactoryMap) {
     // Instantiate all of the nodes defined in the graph
-    for (auto&& nodeDef : _g.nodes()) {
-        _nodes[nodeDef.name()] = _nodeCreator(nodeDef, _g);
+    for (auto&& nodeDef : g.nodes()) {
+        const std::string& typeName = nodeDef.nodeType();
+        auto it = nodeFactoryMap.find(typeName);
+        if (it == nodeFactoryMap.end()) {
+            it = nodeFactoryMap.find("*");
+            if (it == nodeFactoryMap.end()) {
+                REF_ABORT(Format("No factory function found for node type '%s'", typeName));
+            }
+        }
+        _nodes[nodeDef.name()] = it->second(nodeDef, g);
     }
 
     // Create a mapping from topic name to nodes triggered by publishing that topic
@@ -22,7 +31,10 @@ Controller::Controller(const Graph& g, Controller::NodeFactoryFn nodeCreator)
     }
 }
 
-void Controller::readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready, Time::TimePoint* tickDeadline) {
+void Controller::readyNodes(
+        Time::TimePoint currentTime,
+        std::vector<NodeBase*>* ready,
+        Time::TimePoint* tickDeadline) {
     ready->clear();
 
     Time::TimePoint unused;

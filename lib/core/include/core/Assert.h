@@ -7,9 +7,9 @@
 // Defines
 ////////////////////////////////////////////////////////////////////////////////
 
-#define ABORT_ALWAYS(...) ::ref::Abort(__LINE__, __FILE__, ##__VA_ARGS__)
+#define REF_ABORT(...) ::ref::Abort(__LINE__, __FILE__, ##__VA_ARGS__)
 
-#define ASSERT_ALWAYS(expression, ...) \
+#define REF_ASSERT(expression, ...) \
     do { \
         static_assert( \
                 !__builtin_constant_p(expression), \

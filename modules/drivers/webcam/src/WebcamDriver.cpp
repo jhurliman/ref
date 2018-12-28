@@ -25,17 +25,17 @@ WebcamDriver::WebcamDriver(const NodeDefinition& def, const Graph& graph)
 
     // Initialize libuvc
     uvc_error_t res = uvc_init(&context, nullptr);
-    ASSERT_ALWAYS(res >= 0, Format("uvc_init failed: %s", uvc_strerror(res)));
+    REF_ASSERT(res >= 0, Format("uvc_init failed: %s", uvc_strerror(res)));
 
     // Find the USB device we're looking for (defaults to first video device)
     const char* serialNumber = serial_number.empty() ? nullptr : serial_number.c_str();
     res = uvc_find_device(context, &device, vendor_id, product_id, serialNumber);
-    ASSERT_ALWAYS(res >= 0, Format("uvc_find_device failed: %s", uvc_strerror(res)));
+    REF_ASSERT(res >= 0, Format("uvc_find_device failed: %s", uvc_strerror(res)));
 
     // Fetch information about the located device
     uvc_device_descriptor_t* desc = nullptr;
     res = uvc_get_device_descriptor(device, &desc);
-    ASSERT_ALWAYS(res >= 0, Format("uvc_get_device_descriptor failed: %s", uvc_strerror(res)));
+    REF_ASSERT(res >= 0, Format("uvc_get_device_descriptor failed: %s", uvc_strerror(res)));
     LOG_INFO(
             "Using camera \"%s\" (vendor_id=%d, product_id=%d, serial_number=%s)",
             desc->product ? desc->product : "(unknown)",
@@ -46,17 +46,17 @@ WebcamDriver::WebcamDriver(const NodeDefinition& def, const Graph& graph)
 
     // Open the device
     res = uvc_open(device, &deviceHandle);
-    ASSERT_ALWAYS(res >= 0, Format("uvc_open failed: %s", uvc_strerror(res)));
+    REF_ASSERT(res >= 0, Format("uvc_open failed: %s", uvc_strerror(res)));
 
     // Populate our stream configuration object
     res = uvc_get_stream_ctrl_format_size(
             deviceHandle, &control, UVC_FRAME_FORMAT_MJPEG, WIDTH, HEIGHT, FPS);
-    ASSERT_ALWAYS(
+    REF_ASSERT(
             res >= 0, Format("uvc_get_stream_ctrl_format_size failed: %s", uvc_strerror(res)));
 
     // Start streaming frames of video
     res = uvc_start_streaming(deviceHandle, &control, callbackWrapper, this, 0);
-    ASSERT_ALWAYS(res >= 0, Format("uvc_start_streaming failed: %s", uvc_strerror(res)));
+    REF_ASSERT(res >= 0, Format("uvc_start_streaming failed: %s", uvc_strerror(res)));
 
     // Enable auto-exposure
     uvc_set_ae_mode(deviceHandle, 1);
@@ -84,7 +84,7 @@ void WebcamDriver::tick() {
 }
 
 void WebcamDriver::callback(uvc_frame_t* frame) {
-    ASSERT_ALWAYS(frame != nullptr);
+    REF_ASSERT(frame != nullptr);
 
     // NOTE: frame->capture_time is currently not populated by libuvc. See
     // <https://github.com/ktossell/libuvc/issues/17>

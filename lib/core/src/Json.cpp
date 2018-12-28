@@ -1,3 +1,4 @@
+#include "core/Assert.h"
 #include "core/Json.h"
 
 #include <fstream>
@@ -16,7 +17,7 @@ Json::Value ParseJSON(const std::string& str) {
 Json::Value ParseJSONFile(const std::string& filename) {
     Json::Value json;
     std::ifstream file(filename, std::ios::in);
-    assert(file.is_open());
+    REF_ASSERT(file.is_open());
     file >> json;
     return json;
 }

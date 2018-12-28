@@ -3,9 +3,9 @@
 #include <iostream>
 #include <third_party/tinyformat.h>
 
-namespace ref {
-
 #define STR(a) #a
+
+namespace ref {
 
 template<typename... Args>
 void Format(std::ostream& out, const char* fmt, const Args&... args) {

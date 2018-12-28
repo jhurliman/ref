@@ -1,6 +1,7 @@
 #include <controller/Controller.h>
 #include <core/Assert.h>
 #include <core/FileUtils.h>
+#include <core/Json.h>
 #include <core/Log.h>
 #include <messages/Recording.h>
 #include <node/Graph.h>
@@ -13,16 +14,6 @@
 #include <time.h>
 #include <unistd.h>
 
-static std::unique_ptr<ref::NodeBase> CreateNode(const ref::NodeDefinition& def, const ref::Graph g) {
-    if (def.nodeType() == "WebcamDriver") {
-        return std::make_unique<ref::WebcamDriver>(def, g);
-    } else if (def.nodeType() == "Recorder") {
-        return std::make_unique<ref::Recorder>(def, g);
-    } else {
-        ABORT_ALWAYS(ref::Format("Unrecognized node type '%s'", def.nodeType()));
-    }
-}
-
 static void Loop() {
     using namespace ref::filesystem;
     using namespace std::chrono_literals;
@@ -30,29 +21,26 @@ static void Loop() {
     std::string baseDir = JoinPath(ApplicationDir(), "chaser.runfiles/ref_ws");
     std::string configPath = JoinPath(baseDir, "chaser/config/chaser.jsonc");
 
-    Json::Value config;
-    std::ifstream configFile(configPath, std::ifstream::binary);
-    if (!configFile.is_open()) {
-        ABORT_ALWAYS(ref::Format("Failed to open %s", configPath));
-    }
-    configFile >> config;
+    Json::Value config = ref::ParseJSONFile(configPath);
 
     ref::Graph g(baseDir, config["nodes"]);
-
     g.writeDot(std::cout);
 
-    ref::WebcamDriver webcam{g.nodes()[0], g};
-    ref::Recorder recorder{g.nodes()[1], g};
+    std::unordered_map<std::string, ref::Controller::NodeFactoryFn> nodeFactory = {
+        {"WebcamDriver", NODE_FACTORY(ref::WebcamDriver) },
+        {"Recorder", NODE_FACTORY(ref::Recorder) }
+    };
 
-    ref::Controller controller{g, CreateNode};
+    ref::Controller controller;
+    controller.initialize(g, nodeFactory);
 
-    auto start = ref::Time::Now();
-    auto lastTick = start;
+    ref::Time::TimePoint start = ref::Time::Now();
+    ref::Time::TimePoint now;
     std::vector<ref::NodeBase*> ready;
     ref::Time::TimePoint tickDeadline;
 
     do {
-        auto now = ref::Time::Now();
+        now = ref::Time::Now();
 
         controller.readyNodes(now, &ready, &tickDeadline);
 
@@ -66,7 +54,7 @@ static void Loop() {
             // Sleep for this amount of time
             ref::Time::Nanosleep(uint64_t(delayMS * 1e6));
         }
-    } while (lastTick - start < 3s);
+    } while (now - start < 3s);
 }
 
 int main(int, char const* []) {

@@ -95,14 +95,20 @@ TEST(Controller, BasicRobot) {
         }
     };
 
-    auto factory = [&](const NodeDefinition& def, const Graph& g_) -> std::unique_ptr<NodeBase> {
+    auto factoryFn = [&](const NodeDefinition& def, const Graph& g_) -> std::unique_ptr<NodeBase> {
         return std::make_unique<TestNode>(def, g_, tickCallback);
     };
 
-    Controller controller(g, factory);
+    std::unordered_map<std::string, ref::Controller::NodeFactoryFn> nodeFactory = {
+        {"*", factoryFn }
+    };
+
+    Controller controller;
     std::vector<NodeBase*> ready;
     Time::TimePoint t;
     Time::TimePoint tickDeadline;
+
+    controller.initialize(g, nodeFactory);
 
     t = Time::FromNanoseconds(0);
     Tick(controller, ready, t, tickDeadline);
