@@ -2,7 +2,7 @@
 
 #include "Parameters.h"
 
-#include <core/Optional.h>
+#include <core/Result.h>
 #include <json/json.h>
 #include <unordered_map>
 #include <utility>
@@ -48,7 +48,7 @@ public:
     using IDToTopicNameMap = std::unordered_map<InputOutputID, TopicName>;
     using TopicList = std::vector<TopicName>;
 
-    static Optional<NodeDefinition> Create(const std::string& dataDir, const Json::Value& nodeJson);
+    static Result<NodeDefinition> Create(const std::string& dataDir, const Json::Value& nodeJson);
 
     static Topic LookupTopic(const IDToTopicMap& map, const char* id);
 
@@ -72,7 +72,7 @@ private:
     IDToTopicMap _outputs;
     TopicList _triggeringTopics;
 
-    static Optional<Topic> parseOutput(const std::string& dataDir, const Json::Value& entry);
+    static Result<Topic> parseOutput(const std::string& dataDir, const Json::Value& entry);
 
     NodeDefinition(
             const std::string& name,

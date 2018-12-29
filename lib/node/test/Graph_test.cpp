@@ -11,8 +11,10 @@ TEST(Graph, OneNode) {
             "b2a1382b9efb76f895b29a6085f9c96be2933583aa2c14e36d6b39ec92715873";
     constexpr size_t SCHEMA_SIZE = 452;
 
-    Json::Value json = ParseJSONFile("lib/node/test/data/one_node.jsonc");
-    Graph g(".", json["nodes"]);
+    auto res = ParseJSONFile("lib/node/test/data/one_node.jsonc");
+    ASSERT_TRUE(res.isOk());
+
+    Graph g(".", res.value()["nodes"]);
 
     ASSERT_EQ(1, g.nodes().size());
 

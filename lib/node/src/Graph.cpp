@@ -12,12 +12,11 @@ Graph::Graph(const std::string& dataDir, const Json::Value& nodesArray) {
 
     for (auto&& nodeJson : nodesArray) {
         auto res = NodeDefinition::Create(dataDir, nodeJson);
-        if (!res) {
-            throw std::runtime_error(
-                    Format("Invalid node definition:\n%s", nodeJson.toStyledString()));
+        if (!res.isOk()) {
+            throw res.error();
         }
 
-        auto& nodeDef = *res;
+        auto& nodeDef = res.value();
         _nodes.push_back(std::move(nodeDef));
     }
 

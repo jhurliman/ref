@@ -1,5 +1,6 @@
 #pragma once
 
+#include <core/Result.h>
 #include <core/Time.h>
 #include <functional>
 #include <memory>
@@ -17,7 +18,7 @@ class Controller {
 public:
     using NodeFactoryFn = std::function<std::unique_ptr<NodeBase>(const NodeDefinition& nodeDef, const Graph& g)>;
 
-    void initialize(const Graph& g, const std::unordered_map<std::string, NodeFactoryFn>& nodeFactoryMap);
+    Result<void> initialize(const Graph& g, const std::unordered_map<std::string, NodeFactoryFn>& nodeFactoryMap);
     void readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready, Time::TimePoint* tickDeadline);
     void tickNodes(Time::TimePoint currentTime, std::vector<NodeBase*>& nodes);
     void publishMessages(NodeOutputs& messages);

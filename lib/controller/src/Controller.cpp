@@ -6,17 +6,18 @@
 
 namespace ref {
 
-void Controller::initialize(
+Result<void> Controller::initialize(
         const Graph& g,
         const std::unordered_map<std::string, Controller::NodeFactoryFn>& nodeFactoryMap) {
     // Instantiate all of the nodes defined in the graph
     for (auto&& nodeDef : g.nodes()) {
-        const std::string& typeName = nodeDef.nodeType();
-        auto it = nodeFactoryMap.find(typeName);
+        auto it = nodeFactoryMap.find(nodeDef.nodeType());
         if (it == nodeFactoryMap.end()) {
+            // TODO: Get rid of wildcard matching. It's a hack to simplify testing
             it = nodeFactoryMap.find("*");
             if (it == nodeFactoryMap.end()) {
-                REF_ABORT(Format("No factory function found for node type '%s'", typeName));
+                return std::runtime_error(
+                        Format("No factory function found for node type '%s'", nodeDef.nodeType()));
             }
         }
         _nodes[nodeDef.name()] = it->second(nodeDef, g);
@@ -29,6 +30,8 @@ void Controller::initialize(
             _topicsToNodes[topicName].push_back(nodePtr);
         }
     }
+
+    return {};
 }
 
 void Controller::readyNodes(

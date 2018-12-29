@@ -7,11 +7,12 @@
 namespace ref {
 
 TEST(NodeDefinition, OneNode) {
-    Json::Value json = ParseJSONFile("lib/node/test/data/one_node.jsonc");
-    Optional<NodeDefinition> defPtr = NodeDefinition::Create(".", json["nodes"][0]);
-    ASSERT_TRUE(defPtr.has_value());
+    auto jsonRes = ParseJSONFile("lib/node/test/data/one_node.jsonc");
+    ASSERT_TRUE(jsonRes.isOk());
+    auto nodeRes = NodeDefinition::Create(".", jsonRes.value()["nodes"][0]);
+    ASSERT_TRUE(nodeRes.isOk());
 
-    const NodeDefinition& def = *defPtr;
+    const NodeDefinition& def = nodeRes.value();
     EXPECT_EQ("a", def.name());
     EXPECT_EQ("A", def.nodeType());
     EXPECT_EQ(size_t(0), def.triggers().topicMatches.size());
@@ -30,11 +31,12 @@ TEST(NodeDefinition, OneNode) {
 }
 
 TEST(NodeDefinition, WildcardNode) {
-    Json::Value json = ParseJSONFile("lib/node/test/data/wildcard_graph.jsonc");
-    Optional<NodeDefinition> defPtr = NodeDefinition::Create(".", json["nodes"][0]);
-    ASSERT_TRUE(defPtr.has_value());
+    auto jsonRes = ParseJSONFile("lib/node/test/data/wildcard_graph.jsonc");
+    ASSERT_TRUE(jsonRes.isOk());
+    auto nodeRes = NodeDefinition::Create(".", jsonRes.value()["nodes"][0]);
+    ASSERT_TRUE(nodeRes.isOk());
 
-    NodeDefinition& def = *defPtr;
+    NodeDefinition& def = nodeRes.value();
     EXPECT_EQ("w", def.name());
     EXPECT_EQ("W", def.nodeType());
     ASSERT_EQ(1, def.triggers().topicMatches.size());
@@ -45,7 +47,7 @@ TEST(NodeDefinition, WildcardNode) {
     EXPECT_EQ(size_t(0), def.inputs().size());
     ASSERT_EQ(size_t(0), def.outputs().size());
 
-    const Graph g(".", json["nodes"]);
+    const Graph g(".", jsonRes.value()["nodes"]);
 
     EXPECT_EQ(3, g.nodes().size());
     EXPECT_EQ(2, g.topics().size());

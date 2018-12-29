@@ -7,6 +7,6 @@ namespace ref {
 template<typename T>
 using Optional = std::experimental::optional<T>;
 
-static const auto Nullopt = std::experimental::nullopt;
+static constexpr auto Nullopt = std::experimental::nullopt;
 
 }  // namespace ref

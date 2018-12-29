@@ -31,18 +31,16 @@ NodeDefinition::Topic::Topic(const std::string& name_, const TopicType& type_)
 
 // NodeDefinition //////////////////////////////////////////////////////////////
 
-Optional<NodeDefinition>
+Result<NodeDefinition>
 NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) {
     std::string name = nodeJson["name"].asString();
     if (name.empty()) {
-        LOG_ERROR("NodeDefinition is missing field 'name'");
-        return {};
+        return std::runtime_error("NodeDefinition is missing field 'name'");
     }
 
     std::string type = nodeJson["type"].asString();
     if (type.empty()) {
-        LOG_ERROR("NodeDefinition is missing field 'type'");
-        return {};
+        return std::runtime_error("NodeDefinition is missing field 'type'");
     }
 
     TriggerRequirements reqs;
@@ -61,8 +59,7 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     } else if (condition == "interval") {
         reqs.condition = Condition::Interval;
     } else if (!condition.empty()) {
-        LOG_ERROR(Format("Unrecognized condition '%s'", condition));
-        return {};
+        return std::runtime_error(Format("Unrecognized condition '%s'", condition));
     }
 
     reqs.timeout = nodeJson["trigger"]["timeout"].asDouble();
@@ -74,8 +71,7 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     if (inputsJson.isObject()) {
         for (auto&& it = inputsJson.begin(); it != inputsJson.end(); ++it) {
             if (!(*it).isString()) {
-                LOG_ERROR(Format("Invalid input '%s'", it.key().asString()));
-                return {};
+                return std::runtime_error(Format("Invalid input '%s'", it.key().asString()));
             }
 
             inputNames[it.key().asString()] = (*it).asString();
@@ -86,13 +82,12 @@ NodeDefinition::Create(const std::string& dataDir, const Json::Value& nodeJson) 
     auto& outputsJson = nodeJson["outputs"];
     if (outputsJson.isObject()) {
         for (auto&& it = outputsJson.begin(); it != outputsJson.end(); ++it) {
-            const auto& output = NodeDefinition::parseOutput(dataDir, *it);
-            if (!output) {
-                LOG_ERROR(Format("Invalid output '%s'", it.key().asString()));
-                return {};
+            auto output = NodeDefinition::parseOutput(dataDir, *it);
+            if (!output.isOk()) {
+                return output.error();
             }
 
-            const Topic topic = *output;
+            const Topic topic = output.value();
             outputs[it.key().asString()] = topic;
         }
     }
@@ -161,18 +156,16 @@ const NodeDefinition::TopicList& NodeDefinition::triggeringTopics() const {
     return _triggeringTopics;
 }
 
-Optional<NodeDefinition::Topic>
+Result<NodeDefinition::Topic>
 NodeDefinition::parseOutput(const std::string& dataDir, const Json::Value& entry) {
     if (!entry.isObject()) {
-        LOG_ERROR("Output entry is not an object");
-        return {};
+        return std::runtime_error("Output entry is not an object");
     }
 
     const auto& topicName = entry["topic"].asString();
     const auto& typeStr = entry["type"].asString();
     if (topicName.empty() || typeStr.empty()) {
-        LOG_ERROR("Missing 'topic' or 'type' field(s)");
-        return {};
+        return std::runtime_error("Missing 'topic' or 'type' field(s)");
     }
 
     Topic topic;
@@ -184,8 +177,7 @@ NodeDefinition::parseOutput(const std::string& dataDir, const Json::Value& entry
             + typeStr + BINARY_SCHEMA_EXT;
     std::ifstream schema(path, std::ifstream::binary);
     if (!schema.is_open()) {
-        LOG_ERROR("Cannot open schema %s", path);
-        return {};
+        return std::runtime_error(Format("Cannot open schema %s", path));
     }
     topic.type.schema.reserve(filesystem::FileLength(schema));
     std::copy(

@@ -4,7 +4,6 @@
 
 #include <array>
 #include <core/Format.h>
-#include <core/Optional.h>
 #include <core/Time.h>
 #include <cstddef>
 #include <fstream>

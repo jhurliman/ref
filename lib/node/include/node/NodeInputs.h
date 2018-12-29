@@ -5,7 +5,6 @@
 #include "ReceivedMessage.h"
 
 #include <core/Assert.h>
-#include <core/Optional.h>
 #include <core/Time.h>
 
 namespace ref {

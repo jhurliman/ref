@@ -21,9 +21,12 @@ static void Loop() {
     std::string baseDir = JoinPath(ApplicationDir(), "chaser.runfiles/ref_ws");
     std::string configPath = JoinPath(baseDir, "chaser/config/chaser.jsonc");
 
-    Json::Value config = ref::ParseJSONFile(configPath);
+    auto jsonRes = ref::ParseJSONFile(configPath);
+    if (!jsonRes.isOk()) {
+        throw jsonRes.error();
+    }
 
-    ref::Graph g(baseDir, config["nodes"]);
+    ref::Graph g(baseDir, jsonRes.value()["nodes"]);
     g.writeDot(std::cout);
 
     std::unordered_map<std::string, ref::Controller::NodeFactoryFn> nodeFactory = {
@@ -32,7 +35,10 @@ static void Loop() {
     };
 
     ref::Controller controller;
-    controller.initialize(g, nodeFactory);
+    auto res = controller.initialize(g, nodeFactory);
+    if (!res.isOk()) {
+        throw res.error();
+    }
 
     ref::Time::TimePoint start = ref::Time::Now();
     ref::Time::TimePoint now;

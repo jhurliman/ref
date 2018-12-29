@@ -8,11 +8,11 @@
 
 namespace ref {
 
-class TestNode : public NodeBase {
+class NodeWithCallback : public NodeBase {
 public:
-    using TickCallback = std::function<void(TestNode& node)>;
+    using TickCallback = std::function<void(NodeWithCallback& node)>;
 
-    TestNode(const NodeDefinition& def, const Graph& graph, TickCallback tickCallback)
+    NodeWithCallback(const NodeDefinition& def, const Graph& graph, TickCallback tickCallback)
             : NodeBase(def, graph)
             , _inputs(def.inputs())
             , _outputs(def.outputs())
@@ -34,7 +34,7 @@ protected:
     TickCallback _tickCallback;
 };
 
-void TestNode::tick() {
+void NodeWithCallback::tick() {
     _tickCallback(*this);
 }
 
@@ -73,16 +73,30 @@ static PublishedMessageBase* GetOrCreateMessage(const NodeDefinition::Topic& top
     return &res.first->second;
 }
 
+TEST(Controller, InitializeFailure) {
+    auto jsonRes = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
+    ASSERT_TRUE(jsonRes.isOk());
+    Graph g(".", jsonRes.value()["nodes"]);
+    std::unordered_map<std::string, ref::Controller::NodeFactoryFn> emptyFactory;
+
+    Controller controller;
+    auto res = controller.initialize(g, emptyFactory);
+    EXPECT_FALSE(res.isOk());
+    EXPECT_NE(nullptr, res.error().what());
+}
+
 TEST(Controller, BasicRobot) {
-    Json::Value json = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
-    Graph g(".", json["nodes"]);
+    auto jsonRes = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
+    ASSERT_TRUE(jsonRes.isOk());
+
+    Graph g(".", jsonRes.value()["nodes"]);
 
     // Print the graph to stdout in DOT (graphviz) format
     // std::stringstream ss;
     // g.writeDot(ss);
     // std::cout << ss.str() << std::endl;
 
-    auto tickCallback = [](TestNode& node) {
+    auto tickCallback = [](NodeWithCallback& node) {
         // std::cout << node.definition().name() << " ticked at time "
         //           << Time::ToString(node.inputs()->currentTime()) << std::endl;
 
@@ -96,19 +110,19 @@ TEST(Controller, BasicRobot) {
     };
 
     auto factoryFn = [&](const NodeDefinition& def, const Graph& g_) -> std::unique_ptr<NodeBase> {
-        return std::make_unique<TestNode>(def, g_, tickCallback);
+        return std::make_unique<NodeWithCallback>(def, g_, tickCallback);
     };
 
     std::unordered_map<std::string, ref::Controller::NodeFactoryFn> nodeFactory = {
-        {"*", factoryFn }
-    };
+            {"*", factoryFn}};
 
     Controller controller;
     std::vector<NodeBase*> ready;
     Time::TimePoint t;
     Time::TimePoint tickDeadline;
 
-    controller.initialize(g, nodeFactory);
+    auto res = controller.initialize(g, nodeFactory);
+    ASSERT_TRUE(res.isOk());
 
     t = Time::FromNanoseconds(0);
     Tick(controller, ready, t, tickDeadline);

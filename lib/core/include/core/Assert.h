@@ -7,6 +7,10 @@
 // Defines
 ////////////////////////////////////////////////////////////////////////////////
 
+#if !defined(NDEBUG)
+#define REF_DEBUG
+#endif
+
 #define REF_ABORT(...) ::ref::Abort(__LINE__, __FILE__, ##__VA_ARGS__)
 
 #define REF_ASSERT(expression, ...) \
