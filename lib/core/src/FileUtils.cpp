@@ -8,6 +8,8 @@
 #include <unistd.h>
 #elif _WIN32
 #else
+#include <errno.h>
+#include <unistd.h>
 #endif
 
 namespace ref {
@@ -32,7 +34,7 @@ std::string ApplicationPath() {
     char path[PROC_PIDPATHINFO_MAXSIZE];
     pid_t pid = getpid();
     int ret = proc_pidpath(pid, path, sizeof(path));
-    if (ret <= 0) {
+    if (ret < 0) {
         throw std::runtime_error(strerror(errno));
     }
     return std::string(path);
@@ -47,7 +49,12 @@ std::string ApplicationPath() {
 #else
 
 std::string ApplicationPath() {
-    return {};  // FIXME
+    char path[4096];
+    ssize_t ret = readlink("/proc/self/exe", path, sizeof(path));
+    if (ret < 0) {
+        throw std::runtime_error(strerror(errno));
+    }
+    return std::string(path);
 }
 
 #endif
