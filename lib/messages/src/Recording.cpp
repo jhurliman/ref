@@ -73,6 +73,8 @@ Recording::Recording(
         : _filename(filename), _mode(Recording::Mode::Write) {
     std::lock_guard<std::mutex> lock(_writeMutex);
 
+    // Disable output buffering
+    _outfile.rdbuf()->pubsetbuf(nullptr, 0);
     _outfile.open(_filename, std::ios::binary | std::ios::out);
     if (!_outfile.is_open()) {
         throw std::runtime_error(Format("Cannot open recording '%s' for writing", filename));
@@ -108,10 +110,10 @@ Recording::~Recording() {
 }
 
 void Recording::write(
-        uint64_t timestamp,
+        const uint64_t timestamp,
         const std::string& topic,
         const char* message,
-        uint32_t length) {
+        const uint32_t length) {
     // Resolve the topic to a topic list index
     auto&& it = _topicIndexMap.find(topic);
     if (it == _topicIndexMap.end()) {

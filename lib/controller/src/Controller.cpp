@@ -34,6 +34,27 @@ Result<void> Controller::initialize(
     return {};
 }
 
+void Controller::tick() {
+    _readyCache.clear();
+
+    ref::Time::TimePoint now = ref::Time::Now();
+    ref::Time::TimePoint tickDeadline;
+
+    readyNodes(now, &_readyCache, &tickDeadline);
+
+    if (_readyCache.size()) {
+        // One or more nodes are ready to tick, execute right away
+        tickNodes(now, _readyCache);
+    } else {
+        // Find the delay in milliseconds between now and the next deadline
+        double delayMS = ref::Time::DeltaMS(now, tickDeadline);
+        // Clamp the delay to [0-1] milliseconds
+        delayMS = std::max(0.0, std::min(1.0, delayMS));
+        // Sleep for this amount of time
+        ref::Time::Nanosleep(uint64_t(delayMS * 1e6));
+    }
+}
+
 void Controller::readyNodes(
         Time::TimePoint currentTime,
         std::vector<NodeBase*>* ready,

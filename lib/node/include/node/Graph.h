@@ -3,7 +3,7 @@
 #include "NodeDefinition.h"
 
 #include <core/Optional.h>
-#include <json/json.h>
+#include <core/Json.h>
 #include <ostream>
 #include <third_party/ngraph.hpp>
 #include <vector>

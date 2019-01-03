@@ -43,8 +43,14 @@ NodeOutputs* Recorder::outputs() {
 }
 
 void Recorder::tick() {
-    // FIXME:
-    // _input.record(*_curRecording);
+    Recording& recording = *_curRecording;
+    for (auto&& [topicName, msg] : _input.allMessages()) {
+        // TODO: Get the timestamp from the message header
+        const uint64_t timestamp = Time::ToNanoseconds(_input.currentTime());
+        const char* msgData = reinterpret_cast<const char*>(msg.data.data());
+        const uint32_t msgSize = uint32_t(msg.data.size());
+        recording.write(timestamp, topicName, msgData, msgSize);
+    }
 }
 
 }  // namespace ref

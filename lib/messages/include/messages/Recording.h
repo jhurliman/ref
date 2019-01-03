@@ -36,7 +36,11 @@ public:
     template<class Message, class MessageT>
     void write(const std::string& topicName, const MessageT& message);
 
-    void write(uint64_t timestamp, const std::string& topic, const char* message, uint32_t length);
+    void
+    write(const uint64_t timestamp,
+          const std::string& topic,
+          const char* message,
+          const uint32_t length);
     void flush();
     void close();
 

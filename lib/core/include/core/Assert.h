@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Format.h"
 #include "Log.h"
 

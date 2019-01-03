@@ -1,7 +1,7 @@
 load("//:common.bzl", "REF_COPTS")
 
 cc_binary(
-    name = "chaser",
+    name = "camera_record",
     srcs = glob([
         "src/**/*.cpp"
     ]),

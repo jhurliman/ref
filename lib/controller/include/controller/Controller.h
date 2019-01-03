@@ -19,6 +19,7 @@ public:
     using NodeFactoryFn = std::function<std::unique_ptr<NodeBase>(const NodeDefinition& nodeDef, const Graph& g)>;
 
     Result<void> initialize(const Graph& g, const std::unordered_map<std::string, NodeFactoryFn>& nodeFactoryMap);
+    void tick();
     void readyNodes(Time::TimePoint currentTime, std::vector<NodeBase*>* ready, Time::TimePoint* tickDeadline);
     void tickNodes(Time::TimePoint currentTime, std::vector<NodeBase*>& nodes);
     void publishMessages(NodeOutputs& messages);
@@ -26,6 +27,7 @@ public:
 private:
     std::unordered_map<NodeDefinition::NodeName, std::unique_ptr<NodeBase>> _nodes;
     std::unordered_map<NodeDefinition::TopicName, std::vector<NodeBase*>> _topicsToNodes;
+    std::vector<NodeBase*> _readyCache;
 };
 
 }  // namespace ref
