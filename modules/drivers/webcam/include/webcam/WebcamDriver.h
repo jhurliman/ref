@@ -29,33 +29,6 @@ public:
         serializeMessage<Image, ImageT>(image_compressed);
         serializeMessage<CameraInfo, CameraInfoT>(camera_info);
     }
-
-    // FIXME: Move the recording code into the Recorder or Recording classes.
-    // Expose a std::unordered_map<TopicName, {publish_stamp, type?,
-    // flatbuffers::FlatBufferBuilder*}>& This can be used for both deserialization when populating
-    // NodeInputs classes and for recording
-
-    // virtual void record(Recording& recording) const {
-    //     using namespace messages::sensors;
-    //     recordMessage<Image, ImageT>(
-    //             idToTopicMap[image_compressed_key].name,
-    //             image_compressed_data,
-    //             recording,
-    //             image_compressed.get());
-    //     recordMessage<CameraInfo, CameraInfoT>(
-    //             idToTopicMap[camera_info_key].name, camera_info_data, recording,
-    //             camera_info.get());
-    // }
-
-    // template<class Message, class MessageT>
-    // void recordMessage(const std::string& topic, const flatbuffers::FlatBufferBuilder& builder,
-    // Recording& recording, MessageT* msg) {
-    //     if (msg) {
-    //         uint64_t timestamp = msg->header.publish_stamp;
-    //         const char* data = reinterpret_cast<const char*>(builder.GetBufferPointer());
-    //         recording.write(timestamp, topic, data, builder.GetSize());
-    //     }
-    // }
 };
 
 class WebcamDriver : public NodeBase {
