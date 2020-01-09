@@ -61,7 +61,8 @@ http_archive(
 
 http_archive(
     name = "opencv",
-    url = "https://github.com/opencv/opencv/archive/4.0.0-alpha.tar.gz",
+    url = "https://github.com/opencv/opencv/archive/4.0.1.tar.gz",
     build_file = "@//:third_party/opencv.BUILD",
-    strip_prefix = "opencv-4.0.0-alpha",
+    sha256 = "7b86a0ee804244e0c407321f895b15e4a7162e9c5c0d2efc85f1cadec4011af4",
+    strip_prefix = "opencv-4.0.1",
 )

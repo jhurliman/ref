@@ -11,6 +11,7 @@ cc_binary(
     deps = [
         "//lib/controller:controller_lib",
         "//lib/messages:messages_lib",
+        "//modules/drivers/opencv_video:opencv_video_driver_lib",
         "//modules/drivers/webcam:webcam_driver_lib",
         "//modules/system/recorder:recorder_lib",
     ],

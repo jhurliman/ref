@@ -74,9 +74,8 @@ static PublishedMessageBase* GetOrCreateMessage(const NodeDefinition::Topic& top
 }
 
 TEST(Controller, InitializeFailure) {
-    auto jsonRes = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
-    ASSERT_TRUE(jsonRes.isOk());
-    Graph g(".", jsonRes.value()["nodes"]);
+    Graph g;
+    ASSERT_TRUE(g.initializeFromConfig(".", "lib/controller/test/data/basic_robot.jsonc").isOk());
     std::unordered_map<std::string, ref::Controller::NodeFactoryFn> emptyFactory;
 
     Controller controller;
@@ -86,10 +85,8 @@ TEST(Controller, InitializeFailure) {
 }
 
 TEST(Controller, BasicRobot) {
-    auto jsonRes = ParseJSONFile("lib/controller/test/data/basic_robot.jsonc");
-    ASSERT_TRUE(jsonRes.isOk());
-
-    Graph g(".", jsonRes.value()["nodes"]);
+    Graph g;
+    ASSERT_TRUE(g.initialize(".", "lib/controller/test/data/basic_robot.jsonc").isOk());
 
     // Print the graph to stdout in DOT (graphviz) format
     // std::stringstream ss;

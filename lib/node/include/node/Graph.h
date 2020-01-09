@@ -2,8 +2,9 @@
 
 #include "NodeDefinition.h"
 
-#include <core/Optional.h>
 #include <core/Json.h>
+#include <core/Optional.h>
+#include <core/Result.h>
 #include <ostream>
 #include <third_party/ngraph.hpp>
 #include <vector>
@@ -12,7 +13,9 @@ namespace ref {
 
 class Graph {
 public:
-    Graph(const std::string& dataDir, const Json::Value& nodesArray);
+    Result<void> initialize(const std::string& dataDir, const Json::Value& nodesArray);
+    Result<void> initializeFromAppConfig(const std::string& appName);
+    Result<void> initializeFromConfig(const std::string& dataDir, const std::string& configFile);
 
     const std::vector<NodeDefinition>& nodes() const;
     const std::vector<NodeDefinition::Topic>& topics() const;
@@ -23,8 +26,6 @@ public:
     void writeDot(std::ostream& stream) const;
 
 private:
-    void initialize();
-
     NGraph::sGraph _graph;
     std::vector<NodeDefinition> _nodes;
     std::vector<NodeDefinition::Topic> _topics;

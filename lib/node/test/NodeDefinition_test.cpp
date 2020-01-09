@@ -47,7 +47,8 @@ TEST(NodeDefinition, WildcardNode) {
     EXPECT_EQ(size_t(0), def.inputs().size());
     ASSERT_EQ(size_t(0), def.outputs().size());
 
-    const Graph g(".", jsonRes.value()["nodes"]);
+    Graph g;
+    ASSERT_TRUE(g.initialize(".", jsonRes.value()["nodes"]).isOk());
 
     EXPECT_EQ(3, g.nodes().size());
     EXPECT_EQ(2, g.topics().size());

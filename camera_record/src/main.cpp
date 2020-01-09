@@ -1,37 +1,33 @@
 #include <controller/Controller.h>
 #include <core/Application.h>
+#include <opencv_video/OpenCVVideoDriver.h>
 #include <recorder/Recorder.h>
 #include <webcam/WebcamDriver.h>
 
-int main(int, char const* []) {
-    using namespace ref::filesystem;
-
-    std::string baseDir = JoinPath(ApplicationDir(), "camera_record.runfiles/ref_ws");
-    std::string configPath = JoinPath(baseDir, "camera_record/config/camera_record.jsonc");
-
-    auto jsonRes = ref::ParseJSONFile(configPath);
-    if (!jsonRes.isOk()) {
-        throw jsonRes.error();
-    }
-
-    ref::Graph g(baseDir, jsonRes.value()["nodes"]);
-
-    ref::Time::Init();
-
-    std::unordered_map<std::string, ref::Controller::NodeFactoryFn> nodeFactory = {
-        {"WebcamDriver", NODE_FACTORY(ref::WebcamDriver) },
-        {"Recorder", NODE_FACTORY(ref::Recorder) }
-    };
-
-    ref::Controller controller;
-    auto res = controller.initialize(g, nodeFactory);
-    if (!res.isOk()) {
+int main(int, char const*[]) {
+    // Initialize the graph definition
+    ref::Graph graph;
+    if (auto res = graph.initializeFromAppConfig("camera_record"); !res.isOk()) {
         throw res.error();
     }
 
+    // Initialize time
+    ref::Time::Init();
+
+    // Define the mapping from node types to methods that instantiate a node
+    std::unordered_map<std::string, ref::Controller::NodeFactoryFn> nodeFactory = {
+            {"OpenCVVideoDriver", NODE_FACTORY(ref::OpenCVVideoDriver)},
+            {"Recorder", NODE_FACTORY(ref::Recorder)},
+            {"WebcamDriver", NODE_FACTORY(ref::WebcamDriver)}};
+
+    // Initialize the execution controller
+    ref::Controller controller;
+    if (auto res = controller.initialize(graph, nodeFactory); !res.isOk()) {
+        throw res.error();
+    }
+
+    // Start the execution loop
     while (ref::Running()) {
         controller.tick();
     }
-
-    return 0;
 }

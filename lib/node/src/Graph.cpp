@@ -1,19 +1,20 @@
 #include "node/Graph.h"
 
 #include <core/Assert.h>
+#include <core/FileUtils.h>
 #include <core/Format.h>
 
 namespace ref {
 
-Graph::Graph(const std::string& dataDir, const Json::Value& nodesArray) {
+Result<void> Graph::initialize(const std::string& dataDir, const Json::Value& nodesArray) {
     if (!nodesArray.isArray()) {
-        throw std::runtime_error("Graph initialization requires a JSON array");
+        return std::runtime_error("Graph initialization requires a JSON array");
     }
 
     for (auto&& nodeJson : nodesArray) {
         auto res = NodeDefinition::Create(dataDir, nodeJson);
         if (!res.isOk()) {
-            throw res.error();
+            return res.error();
         }
 
         auto& nodeDef = res.value();
@@ -21,13 +22,9 @@ Graph::Graph(const std::string& dataDir, const Json::Value& nodesArray) {
     }
 
     if (!_nodes.size()) {
-        throw std::runtime_error("Initialized an empty graph");
+        return std::runtime_error("Initialized an empty graph");
     }
 
-    initialize();
-}
-
-void Graph::initialize() {
     std::unordered_map<std::string, NodeDefinition::Topic> topicsMap;
     std::unordered_map<std::string, NodeDefinition::TopicType> typesMap;
 
@@ -76,6 +73,31 @@ void Graph::initialize() {
             _graph.insert_edge(topicVertex, nodeVertex);
         }
     }
+
+    return {};
+}
+
+Result<void> Graph::initializeFromAppConfig(const std::string& appName) {
+    using namespace ref::filesystem;
+
+    std::string dataDir = JoinPath(ApplicationDir(), Format("%s.runfiles/ref_ws", appName));
+    std::string configFile = JoinPath(dataDir, Format("%s/config/%s.jsonc", appName, appName));
+    return initializeFromConfig(dataDir, configFile);
+}
+
+Result<void>
+Graph::initializeFromConfig(const std::string& dataDir, const std::string& configFile) {
+    auto res = ref::ParseJSONFile(configFile);
+    if (!res.isOk()) {
+        return res.error();
+    }
+
+    const Json::Value& nodes = res.value()["nodes"];
+    if (!nodes.isArray()) {
+        return std::runtime_error(Format("%s is missing required array 'nodes'", configFile));
+    }
+
+    return initialize(dataDir, nodes);
 }
 
 const std::vector<NodeDefinition>& Graph::nodes() const {

@@ -11,10 +11,8 @@ TEST(Graph, OneNode) {
             "b2a1382b9efb76f895b29a6085f9c96be2933583aa2c14e36d6b39ec92715873";
     constexpr size_t SCHEMA_SIZE = 452;
 
-    auto res = ParseJSONFile("lib/node/test/data/one_node.jsonc");
-    ASSERT_TRUE(res.isOk());
-
-    Graph g(".", res.value()["nodes"]);
+    Graph g;
+    ASSERT_TRUE(g.initializeFromConfig(".", "lib/node/test/data/one_node.jsonc").isOk());
 
     ASSERT_EQ(1, g.nodes().size());
 
@@ -52,7 +50,6 @@ TEST(Graph, OneNode) {
     EXPECT_TRUE(StartsWith(ss.str(), "digraph G {"));
 }
 
-// TODO: Implement tests for more complex graphs when Graph actually does
-// something
+// TODO: Implement tests for more complex graphs
 
 }  // namespace ref

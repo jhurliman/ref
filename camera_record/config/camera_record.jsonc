@@ -2,17 +2,12 @@
   "nodes": [
     {
       "name": "camera_main",
-      "type": "WebcamDriver",
+      "type": "OpenCVVideoDriver",
       "trigger": {
         "topics": [],
         "timeout": 0.01
       },
-      "parameters": {
-        // Logitech HD Pro Webcam C920
-        "vendor_id": 1133,
-        "product_id": 2093,
-        "serial_number": "1729A01F"
-      },
+      "parameters": {},
       "inputs": {},
       "outputs": {
         "image_compressed": {
