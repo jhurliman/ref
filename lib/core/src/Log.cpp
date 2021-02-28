@@ -7,7 +7,7 @@
 namespace ref {
 
 bool IsStdoutATerminal() {
-    static bool isTTY = isatty(fileno(stdout));
+    static const bool isTTY = isatty(fileno(stdout));
     return isTTY;
 }
 
